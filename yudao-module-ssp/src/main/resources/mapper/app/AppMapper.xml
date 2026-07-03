@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.module.ssp.dal.mysql.app.AppMapper">
+
+
+    <!--
+        查询应用详情
+    -->
+    <select id="selectAppById" resultType="cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO">
+        SELECT
+            a.id,
+            a.media_id,
+            m.media_company_short AS media_short,
+            a.name,
+            a.os_type,
+            a.access_type,
+            a.pkg,
+            a.download_url,
+            a.enable,
+            a.creator,
+            a.create_time,
+            a.updater,
+            a.update_time,
+            a.deleted,
+            a.tenant_id
+        FROM ssp_app a
+                 LEFT JOIN ssp_media m
+                           ON a.media_id = m.id
+        WHERE a.id = #{id}
+          AND a.deleted = 0
+    </select>
+
+    <!--
+        分页查询应用列表
+    -->
+    <select id="selectAppPage" resultType="cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO">
+        SELECT
+        a.id,
+        a.media_id,
+        m.media_company_short AS media_short,
+        a.name,
+        a.os_type,
+        a.access_type,
+        a.pkg,
+        a.download_url,
+        a.enable,
+        a.creator,
+        a.create_time,
+        a.updater,
+        a.update_time,
+        a.deleted,
+        a.tenant_id
+        FROM ssp_app a
+        LEFT JOIN ssp_media m
+        ON a.media_id = m.id
+        <where>
+            a.deleted = 0
+            <if test="reqVO.mediaId != null">
+                AND  a.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.name != null and reqVO.name != ''">
+                AND  a.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            </if>
+            <if test="reqVO.osType != null">
+                AND  a.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.accessType != null">
+                AND  a.access_type = #{reqVO.accessType}
+            </if>
+            <if test="reqVO.enable != null">
+                AND  a.enable = #{reqVO.enable}
+            </if>
+            <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
+                AND  a.create_time BETWEEN #{reqVO.createTime[0]} AND #{reqVO.createTime[1]}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <!--
+        查询应用总数
+    -->
+    <select id="selectAppPageCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM ssp_app a
+        <where>
+            a.deleted = 0
+            <if test="reqVO.mediaId != null">
+                AND  a.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.name != null and reqVO.name != ''">
+                AND  a.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            </if>
+            <if test="reqVO.osType != null">
+                AND  a.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.accessType != null">
+                AND  a.access_type = #{reqVO.accessType}
+            </if>
+            <if test="reqVO.enable != null">
+                AND  a.enable = #{reqVO.enable}
+            </if>
+            <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
+                AND  a.create_time BETWEEN #{reqVO.createTime[0]} AND #{reqVO.createTime[1]}
+            </if>
+        </where>
+    </select>
+
+    <!--
+    查询应用详情
+-->
+    <select id="getAppMediaList" resultType="cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO">
+        SELECT
+            a.id,
+            a.media_id,
+            m.media_company_short AS media_short,
+            a.name,
+            a.os_type,
+            a.access_type,
+            a.pkg,
+            a.download_url,
+            a.enable,
+            a.creator,
+            a.create_time,
+            a.updater,
+            a.update_time,
+            a.deleted,
+            a.tenant_id
+        FROM ssp_app a
+                 LEFT JOIN ssp_media m
+                           ON a.media_id = m.id
+        WHERE a.media_id = #{id}
+          AND a.deleted = 0
+    </select>
+
+
+</mapper>
