@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.module.data.dal.mysql.sspslotday.SspSlotDayMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+    -->
+
+    <select id="selectSspSlotDayPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT day.*
+        FROM data_ssp_slot_day AS day
+        <where>
+            day.deleted = 0
+            <if test="reqVO.mediaId != null">
+                AND day.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.appId != null">
+                AND day.app_id = #{reqVO.appId}
+            </if>
+            <if test="reqVO.sspSlotId != null">
+                AND day.ssp_slot_id = #{reqVO.sspSlotId}
+            </if>
+            <if test="reqVO.dspSlotId != null">
+                AND day.dsp_slot_id = #{reqVO.dspSlotId}
+            </if>
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND day.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+        </where>
+        ORDER BY day.id DESC
+    </select>
+
+    <!--
+        根据 ID 查询
+    -->
+    <select id="getSspSlotDay" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT day.*
+        FROM data_ssp_slot_day AS day
+        WHERE day.id = #{id}
+          AND day.deleted = 0
+    </select>
+
+    <!--
+        根据 dspSlotId 查询
+    -->
+    <select id="getDspSspSlotDay" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT day.*
+        FROM data_ssp_slot_day AS day
+        WHERE day.dsp_slot_id = #{dspSlotId} and day.date = #{date}
+          AND day.deleted = 0
+        ORDER BY day.id DESC
+    </select>
+
+</mapper>
