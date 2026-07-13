@@ -26,4 +26,9 @@ public interface DspSlotInfoMapper extends BaseMapperX<DspSlotInfoDO> {
      */
     Long selectPageCount(@Param("reqVO") DspSlotInfoPageReqVO reqVO);
 
+    /**
+     *  查询广告位媒体表的预算子表数据
+     * @return
+     */
+    List<DspSlotInfoRespVO> getSlotInfoPageSsp();
 }

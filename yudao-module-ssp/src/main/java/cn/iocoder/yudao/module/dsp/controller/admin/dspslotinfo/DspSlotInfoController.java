@@ -88,13 +88,13 @@ public class DspSlotInfoController {
         return success(BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class));
     }
 
-//    @GetMapping("/page-ssp")
-//    @Operation(summary = "获得预算广告位分页")
-//    @PreAuthorize("@ss.hasPermission('dsp:slot-info:query')")
-//    public CommonResult<PageResult<DspSlotInfoRespVO>> getSlotInfoPageSsp(@Valid DspSlotInfoPageReqVO pageReqVO) {
-//        PageResult<DspSlotInfoDO> pageResult = slotInfoService.getSlotInfoPage(pageReqVO);
-//        return success(BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class));
-//    }
+    @GetMapping("/page-ssp")
+    @Operation(summary = "获得媒体广告位子表数据")
+    @PreAuthorize("@ss.hasPermission('dsp:slot-info:query')")
+    public CommonResult<List<DspSlotInfoRespVO>> getSlotInfoPageSsp(@Valid DspSlotInfoPageReqVO pageReqVO) {
+        List<DspSlotInfoRespVO> slotInfoDOList = slotInfoService.getSlotInfoPageSsp(pageReqVO);
+        return success(BeanUtils.toBean(slotInfoDOList,DspSlotInfoRespVO.class));
+    }
 
 
     @GetMapping("/export-excel")

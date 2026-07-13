@@ -17,7 +17,7 @@
             LEFT JOIN dsp_company as com ON dsp.company_id = com.id AND com.deleted = 0
             LEFT JOIN dsp_product as pro on dsp.product_id = pro.id AND pro.deleted = 0
         <where>
-            dsp.deleted = 0
+            dsp.deleted = 0 and com.deleted = 0 and pro.deleted = 0
             <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
                 AND dsp.dsp_slot_code = #{reqVO.dspSlotCode}
             </if>
@@ -88,6 +88,43 @@
                 AND dsp.update_time BETWEEN #{reqVO.updateTime[0]} AND #{reqVO.updateTime[1]}
             </if>
         </where>
+    </select>
+
+    <select id="getSlotInfoPageSsp" resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO">
+        SELECT dsp.*, com.name as companyName, pro.name as productName FROM dsp_slot_info as dsp
+        LEFT JOIN dsp_company as com ON dsp.company_id = com.id AND com.deleted = 0
+        LEFT JOIN dsp_product as pro on dsp.product_id = pro.id AND pro.deleted = 0
+        <where>
+            dsp.deleted = 0 and com.deleted = 0 and pro.deleted = 0
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND dsp.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+            <if test="reqVO.productId != null">
+                AND dsp.product_id = #{reqVO.productId}
+            </if>
+            <if test="reqVO.companyId != null">
+                AND dsp.company_id = #{reqVO.companyId}
+            </if>
+            <if test="reqVO.name != null and reqVO.name != ''">
+                AND dsp.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            </if>
+            <if test="reqVO.osType != null">
+                AND dsp.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.dspPayType != null">
+                AND dsp.dsp_pay_type = #{reqVO.dspPayType}
+            </if>
+            <if test="reqVO.adScene != null">
+                AND dsp.ad_scene = #{reqVO.adScene}
+            </if>
+            <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
+                AND dsp.create_time BETWEEN #{reqVO.createTime[0]} AND #{reqVO.createTime[1]}
+            </if>
+            <if test="reqVO.updateTime != null and reqVO.updateTime.length == 2">
+                AND dsp.update_time BETWEEN #{reqVO.updateTime[0]} AND #{reqVO.updateTime[1]}
+            </if>
+        </where>
+        ORDER BY dsp.id DESC
     </select>
 
 </mapper>

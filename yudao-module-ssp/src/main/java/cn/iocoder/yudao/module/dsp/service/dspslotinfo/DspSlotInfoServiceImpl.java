@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.dsp.service.dspslotinfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.etcd.client.EtcdClient;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.product.ProductDO;
+import cn.iocoder.yudao.module.dsp.dal.mysql.product.ProductMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,10 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
     private DspSlotInfoMapper slotInfoMapper;
 
     @Resource
+    private ProductMapper productMapper;
+
+
+    @Resource
     private EtcdClient etcdClient;
 
     @Value("${yudao.etcd.dsp.prefix:/dsp/config}")
@@ -50,6 +56,13 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         // 插入
         DspSlotInfoDO slotInfo = BeanUtils.toBean(createReqVO, DspSlotInfoDO.class);
         slotInfoMapper.insert(slotInfo);
+        Long productId = slotInfo.getProductId();
+        if (productId != null) {
+            ProductDO product = productMapper.selectById(productId);
+            if (product != null) {
+                slotInfo.setProductName(product.getName());
+            }
+        }
 
         // 同步到etcd
         syncToEtcd(slotInfo);
@@ -65,6 +78,14 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         // 更新
         DspSlotInfoDO updateObj = BeanUtils.toBean(updateReqVO, DspSlotInfoDO.class);
         slotInfoMapper.updateById(updateObj);
+
+        Long productId = updateObj.getProductId();
+        if (productId != null) {
+            ProductDO product = productMapper.selectById(productId);
+            if (product != null) {
+                updateObj.setProductName(product.getName());
+            }
+        }
 
         // 同步到etcd
         syncToEtcd(updateObj);
@@ -112,6 +133,12 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         return new PageResult<>(list, total);
     }
 
+    @Override
+    public List<DspSlotInfoRespVO> getSlotInfoPageSsp(DspSlotInfoPageReqVO pageReqVO) {
+        List<DspSlotInfoRespVO> slotInfoPageSsp = slotInfoMapper.getSlotInfoPageSsp();
+        return slotInfoPageSsp;
+    }
+
     /**
      * 同步数据到etcd
      *
@@ -130,7 +157,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
             etcdData.put("product_name", slotInfo.getProductName() != null ? slotInfo.getProductName() : "");
             etcdData.put("company_id", slotInfo.getCompanyId() != null ? slotInfo.getCompanyId() : 0);
             etcdData.put("product_id", slotInfo.getProductId() != null ? slotInfo.getProductId() : 0);
-            etcdData.put("ad_type_id", slotInfo.getAdScene() != null ? slotInfo.getAdScene() : 0);
+            etcdData.put("ad_scene", slotInfo.getAdScene() != null ? slotInfo.getAdScene() : 0);
             etcdData.put("os_type", slotInfo.getOsType() != null ? slotInfo.getOsType() : 0);
             etcdData.put("dsp_app_key", slotInfo.getDspAppKey() != null ? slotInfo.getDspAppKey() : "");
             etcdData.put("dsp_app_id", slotInfo.getDspAppId() != null ? slotInfo.getDspAppId() : "");
@@ -140,7 +167,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
             etcdData.put("price_encrypt_key", slotInfo.getPriceEncryptKey() != null ? slotInfo.getPriceEncryptKey() : "");
             etcdData.put("dsp_app_store_link", slotInfo.getDspAppStoreLink() != null ? slotInfo.getDspAppStoreLink() : "");
             etcdData.put("dsp_pay_type", slotInfo.getDspPayType() != null ? slotInfo.getDspPayType() : 0);
-            etcdData.put("dsp_deal_ratio", 0.7); // 默认值，可根据实际需求调整
+//            etcdData.put("dsp_deal_ratio", slotInfo.getDsp); // 默认值，可根据实际需求调整
 
             String etcdValue = JSONUtil.toJsonStr(etcdData);
 
