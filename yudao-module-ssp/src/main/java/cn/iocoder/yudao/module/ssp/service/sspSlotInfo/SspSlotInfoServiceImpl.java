@@ -23,6 +23,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.ssp.dal.mysql.sspSlotInfo.SspSlotInfoMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.SLOT_INFO_NOT_EXISTS;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.SSP_SLOT_HAS_LAUNCH;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.diffList;
@@ -79,6 +80,7 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
     public void deleteSlotInfo(Long id) {
         // 校验存在
         validateSlotInfoExists(id);
+        validateSlotInfoHasNoLaunch(Collections.singletonList(id));
         // 删除
         slotInfoMapper.deleteById(id);
 
@@ -88,6 +90,7 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
 
     @Override
         public void deleteSlotInfoListByIds(List<Long> ids) {
+        validateSlotInfoHasNoLaunch(ids);
         // 删除
         slotInfoMapper.deleteByIds(ids);
 
@@ -101,6 +104,18 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
     private void validateSlotInfoExists(Long id) {
         if (slotInfoMapper.selectSlotInfoById(id) == null) {
             throw exception(SLOT_INFO_NOT_EXISTS);
+        }
+    }
+
+    private void validateSlotInfoHasNoLaunch(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        for (Long id : ids) {
+            List<LaunchDO> launches = launchMapper.selectLaunchBySspSlotId(id);
+            if (CollUtil.isNotEmpty(launches)) {
+                throw exception(SSP_SLOT_HAS_LAUNCH);
+            }
         }
     }
 

@@ -7,14 +7,18 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.ssp.controller.admin.media.vo.*;
+import cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.media.MediaDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
+import cn.iocoder.yudao.module.ssp.dal.mysql.app.AppMapper;
 import cn.iocoder.yudao.module.ssp.dal.mysql.media.MediaMapper;
 
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.MEDIA_HAS_APP;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.MEDIA_NOT_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -32,6 +36,9 @@ public class MediaServiceImpl implements MediaService {
 
     @Resource
     private MediaMapper mediaMapper;
+
+    @Resource
+    private AppMapper appMapper;
 
     @Override
     public Long createMedia(MediaSaveReqVO createReqVO) {
@@ -56,12 +63,14 @@ public class MediaServiceImpl implements MediaService {
     public void deleteMedia(Long id) {
         // 校验存在
         validateMediaExists(id);
+        validateMediaHasNoApp(Collections.singletonList(id));
         // 删除
         mediaMapper.deleteById(id);
     }
 
     @Override
         public void deleteMediaListByIds(List<Long> ids) {
+        validateMediaHasNoApp(ids);
         // 删除
         mediaMapper.deleteByIds(ids);
         }
@@ -70,6 +79,17 @@ public class MediaServiceImpl implements MediaService {
     private void validateMediaExists(Long id) {
         if (mediaMapper.selectById(id) == null) {
             throw exception(MEDIA_NOT_EXISTS);
+        }
+    }
+
+    private void validateMediaHasNoApp(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        List<AppDO> apps = appMapper.selectList(new LambdaQueryWrapperX<AppDO>()
+                .in(AppDO::getMediaId, ids));
+        if (CollUtil.isNotEmpty(apps)) {
+            throw exception(MEDIA_HAS_APP);
         }
     }
 

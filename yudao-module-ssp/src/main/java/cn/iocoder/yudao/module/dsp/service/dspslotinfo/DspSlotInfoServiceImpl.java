@@ -14,12 +14,15 @@ import org.springframework.validation.annotation.Validated;
 import java.util.*;
 import cn.iocoder.yudao.module.dsp.controller.admin.dspslotinfo.vo.*;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.dsp.dal.mysql.dspslotinfo.DspSlotInfoMapper;
+import cn.iocoder.yudao.module.dsp.dal.mysql.launch.LaunchMapper;
 
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.DSP_SLOT_HAS_LAUNCH;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.DSP_SLOT_INFO_NOT_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -38,6 +41,9 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
 
     @Resource
     private DspSlotInfoMapper slotInfoMapper;
+
+    @Resource
+    private LaunchMapper launchMapper;
 
     @Resource
     private EtcdClient etcdClient;
@@ -74,6 +80,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
     public void deleteSlotInfo(Long id) {
         // 校验存在
         validateSlotInfoExists(id);
+        validateSlotInfoHasNoLaunch(Collections.singletonList(id));
         // 删除
         slotInfoMapper.deleteById(id);
 
@@ -83,6 +90,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
 
     @Override
         public void deleteSlotInfoListByIds(List<Long> ids) {
+        validateSlotInfoHasNoLaunch(ids);
         // 删除
         slotInfoMapper.deleteByIds(ids);
 
@@ -96,6 +104,18 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
     private void validateSlotInfoExists(Long id) {
         if (slotInfoMapper.selectById(id) == null) {
             throw exception(DSP_SLOT_INFO_NOT_EXISTS);
+        }
+    }
+
+    private void validateSlotInfoHasNoLaunch(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        for (Long id : ids) {
+            List<LaunchDO> launches = launchMapper.selectLaunchByDspSlotId(id);
+            if (CollUtil.isNotEmpty(launches)) {
+                throw exception(DSP_SLOT_HAS_LAUNCH);
+            }
         }
     }
 
