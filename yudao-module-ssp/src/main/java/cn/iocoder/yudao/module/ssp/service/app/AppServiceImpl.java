@@ -7,14 +7,18 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.ssp.controller.admin.app.vo.*;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO;
+import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.ssp.dal.mysql.app.AppMapper;
+import cn.iocoder.yudao.module.ssp.dal.mysql.sspSlotInfo.SspSlotInfoMapper;
 
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.APP_HAS_SSP_SLOT;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.APP_NOT_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -32,6 +36,9 @@ public class AppServiceImpl implements AppService {
 
     @Resource
     private AppMapper appMapper;
+
+    @Resource
+    private SspSlotInfoMapper slotInfoMapper;
 
     @Override
     public Long createApp(AppSaveReqVO createReqVO) {
@@ -56,12 +63,14 @@ public class AppServiceImpl implements AppService {
     public void deleteApp(Long id) {
         // 校验存在
         validateAppExists(id);
+        validateAppHasNoSlot(Collections.singletonList(id));
         // 删除
         appMapper.deleteById(id);
     }
 
     @Override
         public void deleteAppListByIds(List<Long> ids) {
+        validateAppHasNoSlot(ids);
         // 删除
         appMapper.deleteByIds(ids);
         }
@@ -70,6 +79,17 @@ public class AppServiceImpl implements AppService {
     private void validateAppExists(Long id) {
         if (appMapper.selectAppById(id) == null) {
             throw exception(APP_NOT_EXISTS);
+        }
+    }
+
+    private void validateAppHasNoSlot(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        List<SspSlotInfoDO> slots = slotInfoMapper.selectList(new LambdaQueryWrapperX<SspSlotInfoDO>()
+                .in(SspSlotInfoDO::getAppId, ids));
+        if (CollUtil.isNotEmpty(slots)) {
+            throw exception(APP_HAS_SSP_SLOT);
         }
     }
 

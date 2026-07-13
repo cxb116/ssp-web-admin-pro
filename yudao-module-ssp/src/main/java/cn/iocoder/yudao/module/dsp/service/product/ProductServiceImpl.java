@@ -13,14 +13,19 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.dsp.controller.admin.product.vo.*;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.product.ProductDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
+import cn.iocoder.yudao.module.dsp.dal.mysql.dspslotinfo.DspSlotInfoMapper;
 import cn.iocoder.yudao.module.dsp.dal.mysql.product.ProductMapper;
 
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_HAS_COMPANY;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_HAS_DSP_SLOT;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_NOT_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -39,6 +44,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Resource
     private ProductMapper productMapper;
+
+    @Resource
+    private DspSlotInfoMapper slotInfoMapper;
 
     @Resource
     private EtcdClient etcdClient;
@@ -74,7 +82,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         // 校验存在
-        validateProductExists(id);
+        ProductDO product = validateProductExists(id);
+        validateProductCanDelete(product);
         // 删除
         productMapper.deleteById(id);
 
@@ -84,6 +93,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
         public void deleteProductListByIds(List<Long> ids) {
+        validateProductCanDelete(ids);
         // 删除
         productMapper.deleteByIds(ids);
 
@@ -94,9 +104,39 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
-    private void validateProductExists(Long id) {
-        if (productMapper.selectById(id) == null) {
+    private ProductDO validateProductExists(Long id) {
+        ProductDO product = productMapper.selectById(id);
+        if (product == null) {
             throw exception(PRODUCT_NOT_EXISTS);
+        }
+        return product;
+    }
+
+    private void validateProductCanDelete(ProductDO product) {
+        if (product.getCompanyId() != null) {
+            throw exception(PRODUCT_HAS_COMPANY);
+        }
+        validateProductHasNoDspSlot(Collections.singletonList(product.getId()));
+    }
+
+    private void validateProductCanDelete(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        for (Long id : ids) {
+            ProductDO product = validateProductExists(id);
+            if (product.getCompanyId() != null) {
+                throw exception(PRODUCT_HAS_COMPANY);
+            }
+        }
+        validateProductHasNoDspSlot(ids);
+    }
+
+    private void validateProductHasNoDspSlot(List<Long> ids) {
+        List<DspSlotInfoDO> slots = slotInfoMapper.selectList(new LambdaQueryWrapperX<DspSlotInfoDO>()
+                .in(DspSlotInfoDO::getProductId, ids));
+        if (CollUtil.isNotEmpty(slots)) {
+            throw exception(PRODUCT_HAS_DSP_SLOT);
         }
     }
 

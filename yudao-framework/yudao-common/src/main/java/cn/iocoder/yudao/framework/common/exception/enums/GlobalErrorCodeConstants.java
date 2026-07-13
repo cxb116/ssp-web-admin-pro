@@ -41,13 +41,16 @@ public interface GlobalErrorCodeConstants {
 
     // ========== 媒体 1300 ==========
     ErrorCode MEDIA_NOT_EXISTS = new ErrorCode(1300, "媒体不存在");
+    ErrorCode MEDIA_HAS_APP = new ErrorCode(1301, "该媒体下存在应用，禁止删除");
 
     // ========== 媒体应用 1400 ==========
     ErrorCode APP_NOT_EXISTS = new ErrorCode(1400, "媒体应用不存在");
+    ErrorCode APP_HAS_SSP_SLOT = new ErrorCode(1401, "该应用已绑定媒体广告位，禁止删除");
 
 
     // ========== 媒体广告位 1500 ==========
     ErrorCode SLOT_INFO_NOT_EXISTS = new ErrorCode(1500, "媒体广告位不存在");
+    ErrorCode SSP_SLOT_HAS_LAUNCH = new ErrorCode(1501, "该媒体广告位已被投放关系引用，禁止删除");
 
     // ========== 媒体预算绑定1600 ==========
     ErrorCode LAUNCH_NOT_EXISTS = new ErrorCode(1600, "媒体预算绑定不存在");
@@ -58,9 +61,12 @@ public interface GlobalErrorCodeConstants {
 
     // ========== 预算产品广告 1700 ==========
     ErrorCode PRODUCT_NOT_EXISTS = new ErrorCode(1800, "预算广告不存在");
+    ErrorCode PRODUCT_HAS_COMPANY = new ErrorCode(1801, "该预算产品已绑定预算公司，禁止删除");
+    ErrorCode PRODUCT_HAS_DSP_SLOT = new ErrorCode(1802, "该预算产品已被预算广告位引用，禁止删除");
 
     // ========== 预算广告位 1800 ==========
     ErrorCode DSP_SLOT_INFO_NOT_EXISTS = new ErrorCode(1900, "预算广告位不存在");
+    ErrorCode DSP_SLOT_HAS_LAUNCH = new ErrorCode(1901, "该预算广告位已被投放关系引用，禁止删除");
 
     //=============  DSP预算广告位日期报 1900 ==========
     ErrorCode DSP_SLOT_DAY_NOT_EXISTS = new ErrorCode(1900, "DSP预算广告位日期报不存在");
