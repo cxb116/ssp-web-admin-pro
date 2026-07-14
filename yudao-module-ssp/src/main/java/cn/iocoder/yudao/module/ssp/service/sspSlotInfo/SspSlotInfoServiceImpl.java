@@ -161,9 +161,9 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
             String etcdValue = JSONUtil.toJsonStr(etcdData);
 
             // 写入etcd
-            etcdClient.put(etcdKey, etcdValue);
+            etcdClient.putAsync(etcdKey, etcdValue);
 
-            log.info("SspSlotInfo 同步到etcd成功, key: {}, value: {}", etcdKey, etcdValue);
+            log.info("SspSlotInfo etcd sync task submitted, key: {}, value: {}", etcdKey, etcdValue);
         } catch (Exception e) {
             log.error("SspSlotInfo 同步到etcd失败, id: {}", slotInfo.getId(), e);
             // 不抛出异常，避免影响数据库操作
@@ -178,8 +178,8 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
     private void deleteFromEtcd(Long id) {
         try {
             String etcdKey = etcdPrefix + "/sspslot/" + id;
-            etcdClient.delete(etcdKey);
-            log.info("SspSlotInfo 从etcd删除成功, key: {}", etcdKey);
+            etcdClient.deleteAsync(etcdKey);
+            log.info("SspSlotInfo etcd delete task submitted, key: {}", etcdKey);
         } catch (Exception e) {
             log.error("SspSlotInfo 从etcd删除失败, id: {}", id, e);
             // 不抛出异常，避免影响数据库操作

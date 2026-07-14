@@ -133,9 +133,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void validateProductHasNoDspSlot(List<Long> ids) {
-        List<DspSlotInfoDO> slots = slotInfoMapper.selectList(new LambdaQueryWrapperX<DspSlotInfoDO>()
+        Long count = slotInfoMapper.selectCount(new LambdaQueryWrapperX<DspSlotInfoDO>()
                 .in(DspSlotInfoDO::getProductId, ids));
-        if (CollUtil.isNotEmpty(slots)) {
+        if (count != null && count > 0) {
             throw exception(PRODUCT_HAS_DSP_SLOT);
         }
     }

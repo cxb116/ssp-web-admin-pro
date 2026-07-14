@@ -34,6 +34,7 @@ public class AppDO extends BaseDO {
     /**
      * 媒体Id
      */
+    @TableField(exist = false)
     private String mediaShort;
     /**
      * 应用名称

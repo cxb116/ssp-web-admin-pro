@@ -2,7 +2,6 @@ package cn.iocoder.yudao.module.ssp.service.app;
 
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.app.AppDO;
-import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
 import cn.iocoder.yudao.module.ssp.dal.mysql.app.AppMapper;
 import cn.iocoder.yudao.module.ssp.dal.mysql.sspSlotInfo.SspSlotInfoMapper;
 import org.junit.jupiter.api.Test;
@@ -11,8 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +32,7 @@ class AppServiceImplTest {
     void deleteApp_rejectsWhenAppHasSspSlots() {
         ReflectionTestUtils.setField(appService, "slotInfoMapper", slotInfoMapper);
         when(appMapper.selectAppById(1L)).thenReturn(new AppDO());
-        when(slotInfoMapper.selectList(any())).thenReturn(Collections.singletonList(new SspSlotInfoDO()));
+        when(slotInfoMapper.selectCount(any())).thenReturn(1L);
 
         assertThrows(ServiceException.class, () -> appService.deleteApp(1L));
 

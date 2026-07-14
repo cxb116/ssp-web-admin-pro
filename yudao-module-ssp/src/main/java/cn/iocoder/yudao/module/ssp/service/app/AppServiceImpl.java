@@ -86,9 +86,9 @@ public class AppServiceImpl implements AppService {
         if (CollUtil.isEmpty(ids)) {
             return;
         }
-        List<SspSlotInfoDO> slots = slotInfoMapper.selectList(new LambdaQueryWrapperX<SspSlotInfoDO>()
+        Long count = slotInfoMapper.selectCount(new LambdaQueryWrapperX<SspSlotInfoDO>()
                 .in(SspSlotInfoDO::getAppId, ids));
-        if (CollUtil.isNotEmpty(slots)) {
+        if (count != null && count > 0) {
             throw exception(APP_HAS_SSP_SLOT);
         }
     }

@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Etcd 客户端工具类
@@ -25,10 +25,18 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class EtcdClient {
 
+    private static final long DEFAULT_REQUEST_TIMEOUT_MILLIS = 30000L;
+
     private final Client client;
+    private final long requestTimeoutMillis;
 
     public EtcdClient(Client client) {
+        this(client, DEFAULT_REQUEST_TIMEOUT_MILLIS);
+    }
+
+    public EtcdClient(Client client, long requestTimeoutMillis) {
         this.client = client;
+        this.requestTimeoutMillis = requestTimeoutMillis > 0 ? requestTimeoutMillis : DEFAULT_REQUEST_TIMEOUT_MILLIS;
     }
 
     /**
@@ -46,6 +54,14 @@ public class EtcdClient {
     }
 
     /**
+     * Waits for a jetcd operation with a bounded timeout, so unavailable etcd
+     * cannot block business requests indefinitely.
+     */
+    private <T> T await(CompletableFuture<T> future) throws Exception {
+        return future.get(requestTimeoutMillis, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * 获取值
      *
      * @param key 键
@@ -53,9 +69,7 @@ public class EtcdClient {
      */
     public String get(String key) {
         try {
-            GetResponse response = client.getKVClient()
-                    .get(toByteSequence(key))
-                    .get();
+            GetResponse response = await(client.getKVClient().get(toByteSequence(key)));
             List<KeyValue> kvs = response.getKvs();
             if (kvs.isEmpty()) {
                 return null;
@@ -97,9 +111,8 @@ public class EtcdClient {
      */
     public List<KeyValue> getByPrefix(String prefix) {
         try {
-            GetResponse response = client.getKVClient()
-                    .get(toByteSequence(prefix), GetOption.newBuilder().withPrefix(toByteSequence(prefix)).build())
-                    .get();
+            GetResponse response = await(client.getKVClient()
+                    .get(toByteSequence(prefix), GetOption.newBuilder().withPrefix(toByteSequence(prefix)).build()));
             return response.getKvs();
         } catch (Exception e) {
             log.error("Etcd getByPrefix 失败, prefix: {}", prefix, e);
@@ -131,9 +144,8 @@ public class EtcdClient {
      */
     public void put(String key, String value) {
         try {
-            PutResponse response = client.getKVClient()
-                    .put(toByteSequence(key), toByteSequence(value))
-                    .get();
+            PutResponse response = await(client.getKVClient()
+                    .put(toByteSequence(key), toByteSequence(value)));
             log.debug("Etcd put 成功, key: {}, value: {}", key, value);
         } catch (Exception e) {
             log.error("Etcd put 失败, key: {}, value: {}", key, value, e);
@@ -170,10 +182,9 @@ public class EtcdClient {
      */
     public void put(String key, String value, long leaseId) {
         try {
-            PutResponse response = client.getKVClient()
+            PutResponse response = await(client.getKVClient()
                     .put(toByteSequence(key), toByteSequence(value),
-                            PutOption.newBuilder().withLeaseId(leaseId).build())
-                    .get();
+                            PutOption.newBuilder().withLeaseId(leaseId).build()));
             log.debug("Etcd put 成功（带租约）, key: {}, value: {}, leaseId: {}", key, value, leaseId);
         } catch (Exception e) {
             log.error("Etcd put 失败（带租约）, key: {}, value: {}, leaseId: {}", key, value, leaseId, e);
@@ -188,9 +199,7 @@ public class EtcdClient {
      */
     public void delete(String key) {
         try {
-            DeleteResponse response = client.getKVClient()
-                    .delete(toByteSequence(key))
-                    .get();
+            DeleteResponse response = await(client.getKVClient().delete(toByteSequence(key)));
             log.debug("Etcd delete 成功, key: {}", key);
         } catch (Exception e) {
             log.error("Etcd delete 失败, key: {}", key, e);
@@ -224,10 +233,9 @@ public class EtcdClient {
      */
     public void deleteByPrefix(String prefix) {
         try {
-            DeleteResponse response = client.getKVClient()
+            DeleteResponse response = await(client.getKVClient()
                     .delete(toByteSequence(prefix),
-                            DeleteOption.newBuilder().withPrefix(toByteSequence(prefix)).build())
-                    .get();
+                            DeleteOption.newBuilder().withPrefix(toByteSequence(prefix)).build()));
             log.debug("Etcd deleteByPrefix 成功, prefix: {}", prefix);
         } catch (Exception e) {
             log.error("Etcd deleteByPrefix 失败, prefix: {}", prefix, e);
@@ -243,10 +251,7 @@ public class EtcdClient {
      */
     public long grantLease(long ttl) {
         try {
-            return client.getLeaseClient()
-                    .grant(ttl)
-                    .get()
-                    .getID();
+            return await(client.getLeaseClient().grant(ttl)).getID();
         } catch (Exception e) {
             log.error("Etcd grantLease 失败, ttl: {}", ttl, e);
             throw new RuntimeException("Etcd grantLease 失败", e);
@@ -276,9 +281,7 @@ public class EtcdClient {
      */
     public void revokeLease(long leaseId) {
         try {
-            client.getLeaseClient()
-                    .revoke(leaseId)
-                    .get();
+            await(client.getLeaseClient().revoke(leaseId));
             log.debug("Etcd revokeLease 成功, leaseId: {}", leaseId);
         } catch (Exception e) {
             log.error("Etcd revokeLease 失败, leaseId: {}", leaseId, e);

@@ -54,9 +54,9 @@ public class YudaoEtcdAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public EtcdClient etcdClient(Client jetcdClient) {
+    public EtcdClient etcdClient(Client jetcdClient, EtcdProperties properties) {
         log.info("EtcdClient initialized");
-        return new EtcdClient(jetcdClient);
+        return new EtcdClient(jetcdClient, properties.getRequestTimeout());
     }
 
 }

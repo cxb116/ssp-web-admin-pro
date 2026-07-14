@@ -86,9 +86,9 @@ public class MediaServiceImpl implements MediaService {
         if (CollUtil.isEmpty(ids)) {
             return;
         }
-        List<AppDO> apps = appMapper.selectList(new LambdaQueryWrapperX<AppDO>()
+        Long count = appMapper.selectCount(new LambdaQueryWrapperX<AppDO>()
                 .in(AppDO::getMediaId, ids));
-        if (CollUtil.isNotEmpty(apps)) {
+        if (count != null && count > 0) {
             throw exception(MEDIA_HAS_APP);
         }
     }
