@@ -59,10 +59,5 @@ public interface DspSlotInfoService {
      */
     PageResult<DspSlotInfoDO> getSlotInfoPage(DspSlotInfoPageReqVO pageReqVO);
 
-    /**
-     * 获得媒体广告位子表数据
-     * @param pageReqVO
-     * @return
-     */
-    List<DspSlotInfoRespVO> getSlotInfoPageSsp(@Valid DspSlotInfoPageReqVO pageReqVO);
+
 }

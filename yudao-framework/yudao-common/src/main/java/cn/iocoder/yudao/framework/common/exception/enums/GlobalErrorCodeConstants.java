@@ -80,4 +80,7 @@ public interface GlobalErrorCodeConstants {
 
     // ========== DSP-SSP广告位报 2200 ==========
     ErrorCode SSP_SLOT_HOUR_NOT_EXISTS = new ErrorCode(2200, "DSP-SSP广告位报不存在");
+
+    // ========== DSP数据导入 2300 ==========
+    ErrorCode INPUT_EXEC_NOT_EXISTS = new ErrorCode(2300, "DSP数据导入不存在");
 }

@@ -116,5 +116,16 @@ public class DspSlotDayDO extends BaseDO {
      */
     private Integer createdAt;
 
+    /**
+     * 公司名称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String companyName;
+
+    /**
+     * 产品名称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String productName;
 
 }

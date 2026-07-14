@@ -132,11 +132,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         return new PageResult<>(list, total);
     }
 
-    @Override
-    public List<DspSlotInfoRespVO> getSlotInfoPageSsp(DspSlotInfoPageReqVO pageReqVO) {
-        List<DspSlotInfoRespVO> slotInfoPageSsp = slotInfoMapper.getSlotInfoPageSsp();
-        return slotInfoPageSsp;
-    }
+
 
     /**
      * 同步数据到etcd

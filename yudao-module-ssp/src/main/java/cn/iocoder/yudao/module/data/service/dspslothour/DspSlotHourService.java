@@ -59,4 +59,11 @@ public interface DspSlotHourService {
      */
     PageResult<DspSlotHourDO> getDspSlotHourPage(DspSlotHourPageReqVO pageReqVO);
 
+//    /**
+//     * 获得DSP预算广告位小时报的子表数据
+//     *
+//     * @param pageReqVO 分页查询
+//     * @return DSP预算广告位小时报分页
+//     */
+//    List<DspSlotHourDO> getDspSlotHourPageDsp(@Valid DspSlotHourPageReqVO pageReqVO);
 }

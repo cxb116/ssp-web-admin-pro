@@ -88,6 +88,15 @@ public class DspSlotHourController {
         return success(BeanUtils.toBean(pageResult, DspSlotHourRespVO.class));
     }
 
+//    @GetMapping("/page-dsp")
+//    @Operation(summary = "获得DSP预算广告位小时报列表")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+//    public CommonResult<List<DspSlotHourRespVO>> getDspSlotHourPageDsp(@Valid DspSlotHourPageReqVO pageReqVO) {
+//        List<DspSlotHourDO> list = dspSlotHourService.getDspSlotHourPageDsp(pageReqVO);
+//        return success(BeanUtils.toBean(list, DspSlotHourRespVO.class));
+//    }
+
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出DSP预算广告位小时报 Excel")
     @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")

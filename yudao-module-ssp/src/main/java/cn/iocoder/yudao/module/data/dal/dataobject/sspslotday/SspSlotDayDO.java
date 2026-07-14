@@ -128,5 +128,28 @@ public class SspSlotDayDO extends BaseDO {
      */
     private Long createdAt;
 
+    /**
+     * 媒体公司简称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String meidaName;
+
+    /**
+     * 应用名称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String appName;
+
+    /**
+     * 操作系统类型（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String osType;
+
+    /**
+     * SSP名称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String sspName;
 
 }

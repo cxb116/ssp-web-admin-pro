@@ -12,6 +12,7 @@
     <select id="selectDspSlotDayPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
         SELECT day.*
         FROM data_dsp_slot_day AS day
+
         <where>
             day.deleted = 0
             <if test="reqVO.dspSlotId != null">
@@ -41,11 +42,15 @@
         根据 sspSlotId 和 date 查询 SSP 媒体子表天表数据
     -->
     <select id="getSSPDspSlotDay" resultType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
-        SELECT day.*
+        SELECT day.*,com.name AS companyName, pro.name as productName
         FROM data_dsp_slot_day AS day
+        LEFT JOIN dsp_slot_info AS dsp ON dsp.id = day.dsp_slot_id
+        LEFT JOIN dsp_company AS com ON dsp.company_id = com.id
+        LEFT JOIN dsp_product AS pro ON dsp.product_id = pro.id
         WHERE day.ssp_slot_id = #{sspSlotId}
           AND day.date = #{date}
           AND day.deleted = 0
+          AND pro.deleted = 0 AND com.deleted = 0 AND dsp.deleted = 0
         ORDER BY day.id DESC
     </select>
 

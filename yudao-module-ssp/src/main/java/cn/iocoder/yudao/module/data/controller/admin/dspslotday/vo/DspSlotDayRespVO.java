@@ -102,4 +102,12 @@ public class DspSlotDayRespVO {
     @ExcelProperty("创建时间戳")
     private Integer createdAt;
 
+    @Schema(description = "公司名称")
+    @ExcelProperty("公司名称")
+    private String companyName;
+
+    @Schema(description = "产品名称")
+    @ExcelProperty("产品名称")
+    private String productName;
+
 }

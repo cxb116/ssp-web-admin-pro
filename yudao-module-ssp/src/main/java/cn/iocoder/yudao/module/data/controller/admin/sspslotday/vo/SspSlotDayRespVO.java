@@ -114,4 +114,20 @@ public class SspSlotDayRespVO {
     @ExcelProperty("创建时间戳")
     private Long createdAt;
 
+    @Schema(description = "媒体公司简称")
+    @ExcelProperty("媒体公司简称")
+    private String meidaName;
+
+    @Schema(description = "应用名称")
+    @ExcelProperty("应用名称")
+    private String appName;
+
+    @Schema(description = "操作系统类型")
+    @ExcelProperty("操作系统类型")
+    private String osType;
+
+    @Schema(description = "SSP名称")
+    @ExcelProperty("SSP名称")
+    private String sspName;
+
 }

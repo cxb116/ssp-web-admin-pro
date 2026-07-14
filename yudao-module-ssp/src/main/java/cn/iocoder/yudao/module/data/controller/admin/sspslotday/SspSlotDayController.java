@@ -92,9 +92,9 @@ public class SspSlotDayController {
     @Operation(summary = "获得SSP子表DSP表数据广告位报")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('data:ssp-slot-day:query')")
-    public CommonResult<SspSlotDayRespVO> getDspSspSlotDay(Long dspSlotId, Long date) {
-       List<SspSlotDayDO> sspSlotDay = sspSlotDayService.getDspSspSlotDay(dspSlotId,date);
-        return success((SspSlotDayRespVO) sspSlotDay);
+    public CommonResult<List<SspSlotDayRespVO>> getDspSspSlotDay(Long dspSlotId, Long date) {
+       List<SspSlotDayDO> sspSlotDay = sspSlotDayService.getDspSspSlotDay(dspSlotId, date);
+       return success(BeanUtils.toBean(sspSlotDay, SspSlotDayRespVO.class));
     }
 
     @GetMapping("/export-excel")

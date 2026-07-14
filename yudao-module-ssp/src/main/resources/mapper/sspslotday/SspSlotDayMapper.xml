@@ -9,9 +9,20 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
     -->
 
+<!--          SELECT day.*,media.media_company_short as meidaName,app.name AS appName, app.os_type as osType,ssp.name as sspName-->
+<!--          FROM data_ssp_slot_day AS day-->
+<!--          LEFT JOIN ssp_slot_info AS ssp on ssp.id = day.ssp_slot_id-->
+<!--          LEFT JOIN ssp_app AS app on app.id = ssp.app_id-->
+<!--          LEFT JOIN ssp_media as media on media.id = ssp.media_id-->
+<!--    <where>-->
+<!--    day.deleted = 0 AND ssp.deleted = 0 AND app.deleted = 0 AND media.deleted = 0-->
+
     <select id="selectSspSlotDayPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+
+
+
         SELECT day.*
-        FROM data_ssp_slot_day AS day
+                FROM data_ssp_slot_day AS day
         <where>
             day.deleted = 0
             <if test="reqVO.mediaId != null">
