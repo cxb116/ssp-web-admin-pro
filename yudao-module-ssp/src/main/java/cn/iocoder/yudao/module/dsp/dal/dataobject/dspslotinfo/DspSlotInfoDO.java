@@ -31,6 +31,12 @@ public class DspSlotInfoDO extends BaseDO {
      * 预算方广告位
      */
     private String dspSlotCode;
+
+
+
+
+    @TableField(exist = false)
+    private Integer sspSlotId;
     /**
      * 产品ID
      */
@@ -43,6 +49,10 @@ public class DspSlotInfoDO extends BaseDO {
      * 广告位名称
      */
     private String name;
+
+
+    @TableField(exist = false)
+    private Integer ls;
     /**
      * 操作系统
      *
@@ -103,6 +113,10 @@ public class DspSlotInfoDO extends BaseDO {
      */
     @TableField(exist = false)
     private String productName;
-
+    /**
+     *  媒体绑定条数
+     */
+    @TableField(exist = false)
+    private Integer sspTotal;
 
 }

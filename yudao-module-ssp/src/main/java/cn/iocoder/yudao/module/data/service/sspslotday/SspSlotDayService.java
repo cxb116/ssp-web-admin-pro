@@ -60,4 +60,11 @@ public interface SspSlotDayService {
     PageResult<SspSlotDayDO> getSspSlotDayPage(SspSlotDayPageReqVO pageReqVO);
 
     List<SspSlotDayDO> getDspSspSlotDay(Long dspSlotId,Long date);
+
+    /**
+     * 合计
+     * @param date 日期
+     * @return 聚合结果
+     */
+    SspSlotDayRespVO getSspSlotDaySum(Long date);
 }

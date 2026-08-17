@@ -50,11 +50,11 @@ public class SspSlotInfoDO extends BaseDO {
      */
     private Long adScene;
     /**
-     * 样式尺寸
-     *
-     * 枚举 {@link TODO ssp_ad_size 对应的类}
-     */
-    private Long adSize;
+//     * 样式尺寸
+//     *
+//     * 枚举 {@link TODO ssp_ad_size 对应的类}
+//     */
+//    private Long adSize;
     /**
      * 结算方式
      *
@@ -109,5 +109,22 @@ public class SspSlotInfoDO extends BaseDO {
      */
     @TableField(exist = false)
     private int ls;
+
+    /**
+     * 媒体名称（关联查询）
+     */
+    @TableField(exist = false)
+    private String mediaName;
+
+    /**
+     * SSP名称（关联查询，复用 name_alise）
+     */
+    @TableField(exist = false)
+    private String sspName;
+
+
+    @TableField(exist = false)
+    private Long reqCount;
+
 
 }

@@ -28,5 +28,7 @@ public interface InputExecMapper extends BaseMapperX<InputExecDO> {
      * @param id
      * @return
      */
-    List<InputExecDO> getDownExcelInput(Long id,String inputTime);
+    List<InputExecDO> getDownExcelInput(@Param("id") Long id, @Param("inputTime") String inputTime);
+
+    void updateInputExec(InputExecDO inputExecDO);
 }

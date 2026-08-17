@@ -88,6 +88,11 @@ public class SspSlotDayController {
         return success(BeanUtils.toBean(pageResult, SspSlotDayRespVO.class));
     }
 
+
+
+
+
+
     @GetMapping("/dsp_ssp_day")
     @Operation(summary = "获得SSP子表DSP表数据广告位报")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
@@ -95,6 +100,14 @@ public class SspSlotDayController {
     public CommonResult<List<SspSlotDayRespVO>> getDspSspSlotDay(Long dspSlotId, Long date) {
        List<SspSlotDayDO> sspSlotDay = sspSlotDayService.getDspSspSlotDay(dspSlotId, date);
        return success(BeanUtils.toBean(sspSlotDay, SspSlotDayRespVO.class));
+    }
+
+    @GetMapping("/sum")
+    @Operation(summary = "合计")
+    @PreAuthorize("@ss.hasPermission('data:ssp-slot-day:query')")
+    public CommonResult<SspSlotDayRespVO> getSspSlotDaySum(@RequestParam("date") Long date) {
+        SspSlotDayRespVO result = sspSlotDayService.getSspSlotDaySum(date);
+        return success(result);
     }
 
     @GetMapping("/export-excel")

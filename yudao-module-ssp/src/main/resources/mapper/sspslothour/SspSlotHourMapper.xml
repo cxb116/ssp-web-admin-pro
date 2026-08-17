@@ -5,8 +5,106 @@
     <!--
         一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
         无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
-        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MyBatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
+
+    <select id="selectSspSlotHourPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO">
+        SELECT
+        h.ssp_slot_id AS ssp_slot_id,
+        h.date AS date,
+        SUM(h.show_pv) AS show_pv,
+        SUM(h.click_pv) AS click_pv,
+        SUM(h.req_count) AS req_pv,
+        SUM(h.discard) AS discard,
+        SUM(h.ret_pv) AS ret_pv,
+        SUM(h.spend) AS spend,
+        SUM(h.income) AS income,
+        SUM(h.discount_click_pv) AS discount_click_pv,
+        SUM(h.discount_show_pv) AS discount_show_pv,
+        SUM(h.dplsucc_pv) AS dplsucc_pv,
+        SUM(h.complete_pv) AS complete_pv,
+        SUM(h.install_pv) AS install_pv,
+        SUM(h.activate_pv) AS activate_pv,
+
+
+        MAX(ssp.name_alise) AS sspName,
+        MAX(app.name) AS appName,
+        MAX(app.os_type) AS  osType,
+        MAX(media.media_company_short) AS mediaName
+
+
+        FROM data_ssp_slot_hour AS h
+        LEFT JOIN ssp_slot_info AS ssp ON h.ssp_slot_id = ssp.id
+        LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+        LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
+        <where>
+            <if test="reqVO.date != null and reqVO.date.length > 0">
+                <choose>
+                    <when test="reqVO.date.length == 1">
+                        AND h.date = #{reqVO.date[0]}
+                    </when>
+                    <otherwise>
+                        AND h.date BETWEEN #{reqVO.date[0]} AND #{reqVO.date[1]}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="reqVO.mediaId != null">
+                AND h.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.osType != null">
+                AND app.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.appId != null and reqVO.appId.length > 0">
+                AND h.app_id IN
+                <foreach collection="reqVO.appId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.sspName != null and reqVO.sspName.length > 0">
+                AND ssp.name_alise IN
+                <foreach collection="reqVO.sspName" item="name" open="(" separator="," close=")">
+                    #{name}
+                </foreach>
+            </if>
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">
+                AND h.ssp_slot_id IN
+                <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">
+                AND h.dsp_slot_id IN
+                <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND h.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+        </where>
+        GROUP BY
+        h.ssp_slot_id,
+        h.date
+        ORDER BY h.date DESC
+    </select>
+
+    <!--
+        根据 dspSlotId 和 date 查询 DSP 预算位对应的 SSP 小时子表数据
+    -->
+    <select id="getSspDspSlotHour" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO">
+        SELECT hour.*,
+               ssp.name_alise AS sspName,
+               app.name AS appName,
+               app.os_type AS osType,
+               media.media_company_short AS mediaName
+        FROM data_ssp_slot_hour AS hour
+        LEFT JOIN ssp_slot_info AS ssp ON hour.ssp_slot_id = ssp.id
+            LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+            LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
+        WHERE hour.dsp_slot_id = #{dspSlotId}
+          AND hour.date = #{date}
+        ORDER BY hour.id DESC
+    </select>
 
 </mapper>

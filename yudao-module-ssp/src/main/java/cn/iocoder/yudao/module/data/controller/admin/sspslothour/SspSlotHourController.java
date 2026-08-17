@@ -89,16 +89,14 @@ public class SspSlotHourController {
     }
 
     @GetMapping("/dsp_ssp_hour")
-    @Operation(summary = "获得DSP小时子表数据广告位报")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得DSP预算位对应的SSP小时子表数据")
     @PreAuthorize("@ss.hasPermission('data:ssp-slot-hour:query')")
-    public CommonResult<SspSlotHourRespVO> getDspSspSlotHour(@RequestParam("id") Long id) {
-        SspSlotHourDO sspSlotHour = sspSlotHourService.getSspSlotHour(id);
-        return success(BeanUtils.toBean(sspSlotHour, SspSlotHourRespVO.class));
+    public CommonResult<List<SspSlotHourRespVO>> getDspSspSlotHour(
+            @RequestParam("dspSlotId") Long dspSlotId,
+            @RequestParam("date") Long date) {
+        List<SspSlotHourDO> list = sspSlotHourService.getSspDspSlotHour(dspSlotId, date);
+        return success(BeanUtils.toBean(list, SspSlotHourRespVO.class));
     }
-
-
-
 
 
     @GetMapping("/export-excel")

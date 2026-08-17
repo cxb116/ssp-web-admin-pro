@@ -2,12 +2,13 @@ package cn.iocoder.yudao.module.data.dal.mysql.sspslothour;
 
 import java.util.*;
 
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import cn.iocoder.yudao.module.data.controller.admin.sspslothour.vo.*;
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * DSP-SSP广告位报 Mapper
@@ -17,14 +18,18 @@ import cn.iocoder.yudao.module.data.controller.admin.sspslothour.vo.*;
 @Mapper
 public interface SspSlotHourMapper extends BaseMapperX<SspSlotHourDO> {
 
-    default PageResult<SspSlotHourDO> selectPage(SspSlotHourPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<SspSlotHourDO>()
-                .eqIfPresent(SspSlotHourDO::getMediaId, reqVO.getMediaId())
-                .eqIfPresent(SspSlotHourDO::getAppId, reqVO.getAppId())
-                .eqIfPresent(SspSlotHourDO::getSspSlotId, reqVO.getSspSlotId())
-                .eqIfPresent(SspSlotHourDO::getDspSlotId, reqVO.getDspSlotId())
-                .eqIfPresent(SspSlotHourDO::getDspSlotCode, reqVO.getDspSlotCode())
-                .orderByDesc(SspSlotHourDO::getId));
-    }
+    /**
+     * 分页查询
+     */
+    @InterceptorIgnore(tenantLine = "true") // 聚合查询（SUM/MAX + GROUP BY）会导致多租户拦截器的 JSQLParser 解析失败，此处跳过租户 SQL 解析
+    Page<SspSlotHourDO> selectSspSlotHourPage(Page<SspSlotHourDO> page, @Param("reqVO") SspSlotHourPageReqVO reqVO, @Param("sortField") String sortField);
 
+    /**
+     * 根据预算位ID和时间查询 SSP 小时子表数据
+     *
+     * @param dspSlotId 预算广告位ID
+     * @param date      时间(yyyyMMddHH)
+     * @return 子表数据
+     */
+    List<SspSlotHourDO> getSspDspSlotHour(@Param("dspSlotId") Long dspSlotId, @Param("date") Long date);
 }

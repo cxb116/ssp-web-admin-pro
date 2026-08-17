@@ -59,11 +59,20 @@ public interface DspSlotHourService {
      */
     PageResult<DspSlotHourDO> getDspSlotHourPage(DspSlotHourPageReqVO pageReqVO);
 
-//    /**
-//     * 获得DSP预算广告位小时报的子表数据
-//     *
-//     * @param pageReqVO 分页查询
-//     * @return DSP预算广告位小时报分页
-//     */
-//    List<DspSlotHourDO> getDspSlotHourPageDsp(@Valid DspSlotHourPageReqVO pageReqVO);
+    /**
+     * 获得DSP预算广告位小时报导出数据（含关联字段和派生指标）
+     *
+     * @param pageReqVO 分页查询
+     * @return DSP预算广告位小时报导出数据
+     */
+    PageResult<DspSlotHourRespExecVo> getDspSlotHourExceVo(DspSlotHourPageReqVO pageReqVO);
+
+    /**
+     * 获取SSP媒体子表小时数据
+     *
+     * @param sspSlotId 媒体广告位ID
+     * @param date      时间(yyyyMMddHH)
+     * @return 子表数据
+     */
+    List<DspSlotHourDO> getDspSspSlotHour(Long sspSlotId, Integer date);
 }

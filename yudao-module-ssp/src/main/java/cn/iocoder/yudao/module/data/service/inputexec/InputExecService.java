@@ -61,4 +61,13 @@ public interface InputExecService {
 
     List<InputExecDO> getDownExcelInput(Long id,String inputTime);
 
+    /**
+     * 导入DSP数据导入列表
+     *
+     * @param list 导入数据列表
+     * @param companyId 公司ID
+     * @return 导入结果
+     */
+    String importExecList(List<InputExecTemplateVO> list, Long companyId);
+
 }

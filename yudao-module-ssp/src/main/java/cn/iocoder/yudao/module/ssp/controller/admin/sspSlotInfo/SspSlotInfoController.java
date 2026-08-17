@@ -81,8 +81,6 @@ public class SspSlotInfoController {
     }
 
 
-
-
     @GetMapping("/page")
     @Operation(summary = "获得媒体广告位分页")
     @PreAuthorize("@ss.hasPermission('ssp:slot-info:query')")
@@ -97,7 +95,7 @@ public class SspSlotInfoController {
     @ApiAccessLog(operateType = EXPORT)
     public void exportSlotInfoExcel(@Valid SspSlotInfoPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        pageReqVO.setPageSize(2000);
         List<SspSlotInfoDO> list = slotInfoService.getSlotInfoPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "媒体广告位.xls", "数据", SspSlotInfoRespVO.class,

@@ -26,4 +26,16 @@ public interface CompanyMapper extends BaseMapperX<CompanyDO> {
                 .orderByDesc(CompanyDO::getId));
     }
 
+    default boolean existsByDspCode(Long dspCode) {
+        return selectCount(new LambdaQueryWrapperX<CompanyDO>()
+                .eq(CompanyDO::getDspCode, dspCode)) > 0;
+    }
+
+    default Long selectMaxDspCode() {
+        CompanyDO company = selectOne(new LambdaQueryWrapperX<CompanyDO>()
+                .orderByDesc(CompanyDO::getDspCode)
+                .last("limit 1"));
+        return company != null && company.getDspCode() != null ? company.getDspCode() : 0L;
+    }
+
 }

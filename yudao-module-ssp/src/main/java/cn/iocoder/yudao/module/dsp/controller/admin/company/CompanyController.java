@@ -94,7 +94,7 @@ public class CompanyController {
     @ApiAccessLog(operateType = EXPORT)
     public void exportCompanyExcel(@Valid CompanyPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        pageReqVO.setPageSize(1000);
         List<CompanyDO> list = companyService.getCompanyPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "预算广告.xls", "数据", CompanyRespVO.class,

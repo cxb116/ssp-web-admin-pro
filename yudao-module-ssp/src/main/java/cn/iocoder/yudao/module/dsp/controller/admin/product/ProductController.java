@@ -94,7 +94,7 @@ public class ProductController {
     @ApiAccessLog(operateType = EXPORT)
     public void exportProductExcel(@Valid ProductPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        pageReqVO.setPageSize(2000);
         List<ProductDO> list = productService.getProductPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "预算产品.xls", "数据", ProductRespVO.class,

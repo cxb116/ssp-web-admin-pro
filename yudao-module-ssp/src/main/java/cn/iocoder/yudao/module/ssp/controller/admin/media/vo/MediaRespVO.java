@@ -15,27 +15,27 @@ import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 public class MediaRespVO {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "803")
-    @ExcelProperty("ID")
+    @ExcelProperty("媒体ID")
     private Long id;
 
     @Schema(description = "账号名", requiredMode = Schema.RequiredMode.REQUIRED, example = "7880")
-    @ExcelProperty("账号名")
+    @ExcelProperty("媒体账号")
     private String account;
 
     @Schema(description = "公司简称", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("公司简称")
+    @ExcelProperty("媒体简称")
     private String mediaCompanyShort;
 
     @Schema(description = "媒体名称", example = "芋艿")
-    @ExcelProperty("媒体名称")
+
     private String name;
 
     @Schema(description = "公司名称", example = "李四")
-    @ExcelProperty("公司名称")
+
     private String mediaCompanyName;
 
     @Schema(description = "公司地址")
-    @ExcelProperty("公司地址")
+//    @ExcelProperty("公司地址")
     private String mediaCompanyAddress;
 
     @Schema(description = "法人姓名", example = "张三")

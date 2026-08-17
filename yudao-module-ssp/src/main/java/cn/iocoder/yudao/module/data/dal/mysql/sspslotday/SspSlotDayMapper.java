@@ -34,4 +34,10 @@ public interface SspSlotDayMapper extends BaseMapperX<SspSlotDayDO> {
      */
     List<SspSlotDayDO> getDspSspSlotDay(@Param("dspSlotId") Long dspSlotId, @Param("date") Long date);
 
+    // 查询今天的曝光数量
+    SspSlotDayDO selectSspSlotId(@Param("sspSlotId") Long sspSlotId,@Param("dspSlotCode")String dspSlotCode, @Param("inputTime") String inputTime);
+
+    void updateSspSlotDay(SspSlotDayDO sspSlotDayDO);
+
+    SspSlotDayDO selectRequestCount(@Param("sspSlotId")Long sspSlotId,@Param("time") String time);
 }

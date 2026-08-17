@@ -108,4 +108,56 @@ public class DspSlotHourRespVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "DSP预算名称")
+    @ExcelProperty("DSP预算名称")
+    private String dspName;
+
+    @Schema(description = "公司名称")
+    @ExcelProperty("公司名称")
+    private String companyName;
+
+    @Schema(description = "产品名称")
+    @ExcelProperty("产品名称")
+    private String productName;
+
+    @Schema(description = "媒体广告位名称")
+    private String sspName;
+
+    @Schema(description = "应用名称")
+    private String appName;
+
+    @Schema(description = "操作系统 1=Android 2=iOS")
+    private Integer osType;
+
+    @Schema(description = "媒体名称")
+    private String mediaName;
+
+    @Schema(description = "填充率")
+    @ExcelProperty("填充率")
+    private Double fillRate;
+
+    @Schema(description = "展现率")
+    @ExcelProperty("展现率")
+    private Double displayRate;
+
+    @Schema(description = "点击率")
+    @ExcelProperty("点击率")
+    private Double clickRate;
+
+    @Schema(description = "ecpm（预算千次展示收益）")
+    @ExcelProperty("ecpm")
+    private Double ecpm;
+
+    @Schema(description = "媒体ecpm（媒体千次展示收益）")
+    @ExcelProperty("媒体ecpm")
+    private Double mediaEcpm;
+
+    @Schema(description = "ecprm（预算百万请求收益）")
+    @ExcelProperty("ecprm")
+    private Double ecprm;
+
+    @Schema(description = "媒体ecprm（媒体百万请求收益）")
+    @ExcelProperty("媒体ecprm")
+    private Double mediaEcprm;
+
 }

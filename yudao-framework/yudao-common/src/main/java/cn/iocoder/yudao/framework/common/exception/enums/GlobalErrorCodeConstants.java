@@ -57,12 +57,14 @@ public interface GlobalErrorCodeConstants {
 
     // ========== 预算广告 1700 ==========
     ErrorCode COMPANY_NOT_EXISTS = new ErrorCode(1700, "预算广告不存在");
+    ErrorCode COMPANY_DSP_CODE_EXISTS = new ErrorCode(1701, "预算映射值已存在");
 
 
     // ========== 预算产品广告 1700 ==========
     ErrorCode PRODUCT_NOT_EXISTS = new ErrorCode(1800, "预算广告不存在");
     ErrorCode PRODUCT_HAS_COMPANY = new ErrorCode(1801, "该预算产品已绑定预算公司，禁止删除");
     ErrorCode PRODUCT_HAS_DSP_SLOT = new ErrorCode(1802, "该预算产品已被预算广告位引用，禁止删除");
+    ErrorCode PRODUCT_NAME_EXISTS = new ErrorCode(1803, "该公司下已存在同名的产品名称");
 
     // ========== 预算广告位 1800 ==========
     ErrorCode DSP_SLOT_INFO_NOT_EXISTS = new ErrorCode(1900, "预算广告位不存在");

@@ -21,6 +21,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.dsp.dal.mysql.company.CompanyMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.COMPANY_NOT_EXISTS;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.COMPANY_DSP_CODE_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.diffList;
@@ -47,6 +48,14 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public Long createCompany(CompanySaveReqVO createReqVO) {
+        // 自动生成匹配值：取当前最大dspCode + 1，初始值为1
+        if (createReqVO.getDspCode() == null) {
+            Long maxDspCode = companyMapper.selectMaxDspCode();
+            createReqVO.setDspCode(maxDspCode + 1);
+        }
+        if (companyMapper.existsByDspCode(createReqVO.getDspCode())) {
+            throw exception(COMPANY_DSP_CODE_EXISTS);
+        }
         // 插入
         CompanyDO company = BeanUtils.toBean(createReqVO, CompanyDO.class);
         companyMapper.insert(company);

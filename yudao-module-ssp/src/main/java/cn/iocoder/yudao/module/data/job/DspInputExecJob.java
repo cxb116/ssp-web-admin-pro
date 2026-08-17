@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +31,7 @@ public class DspInputExecJob {
     /**
      * 每天凌晨2点执行
      */
-    @Scheduled(cron = "0 09 16 * * ?")
+    @Scheduled(cron = "0 10 14 * * ?")
     public void execute() {
         try {
             // 设置租户ID
@@ -46,13 +47,13 @@ public class DspInputExecJob {
 
             int successCount = 0;
             LocalDateTime now = LocalDateTime.now();
-
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
             // 为每个公司创建一条导入记录
             for (CompanyDO company : companies) {
                 InputExecDO inputExec = new InputExecDO();
                 inputExec.setCompanyId(company.getId());
                 inputExec.setTables(0L); // 每个公司创建一条记录
-                inputExec.setInputTime(new Date());
+                inputExec.setInputTime(sdf.format(new Date()));
 
                 inputExecMapper.insert(inputExec);
                 successCount++;

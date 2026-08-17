@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.ssp.service.sspSlotInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.etcd.client.EtcdClient;
+import cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO;
+import cn.iocoder.yudao.module.data.dal.mysql.sspslotday.SspSlotDayMapper;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
 import cn.iocoder.yudao.module.dsp.dal.mysql.launch.LaunchMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import cn.iocoder.yudao.module.ssp.controller.admin.sspSlotInfo.vo.*;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
@@ -48,6 +52,9 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
     @Resource
     private EtcdClient etcdClient;
 
+    @Resource
+    private SspSlotDayMapper spSlotDayMapper;
+
     @Value("${yudao.etcd.dsp.prefix:/dsp/config}")
     private String etcdPrefix;
 
@@ -57,8 +64,9 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
         SspSlotInfoDO slotInfo = BeanUtils.toBean(createReqVO, SspSlotInfoDO.class);
         slotInfoMapper.insert(slotInfo);
 
-        // 同步到etcd
-        syncToEtcd(slotInfo);
+        // osType 来自 ssp_app 关联字段，需重新查询完整数据后再同步 etcd
+        SspSlotInfoDO fullSlotInfo = slotInfoMapper.selectSlotInfoById(slotInfo.getId());
+        syncToEtcd(fullSlotInfo != null ? fullSlotInfo : slotInfo);
 
         // 返回
         return slotInfo.getId();
@@ -72,8 +80,14 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
         SspSlotInfoDO updateObj = BeanUtils.toBean(updateReqVO, SspSlotInfoDO.class);
         slotInfoMapper.updateById(updateObj);
 
-        // 同步到etcd
-        syncToEtcd(updateObj);
+        // 更新请求不包含 osType（来自应用表），直接用 updateObj 同步会导致 os_type=0
+        // 重新查询关联数据（含 app.os_type）后再同步 etcd
+        SspSlotInfoDO fullSlotInfo = slotInfoMapper.selectSlotInfoById(updateReqVO.getId());
+        if (fullSlotInfo != null) {
+            syncToEtcd(fullSlotInfo);
+        } else {
+            syncToEtcd(updateObj);
+        }
     }
 
     @Override
@@ -126,12 +140,22 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
 
     @Override
     public PageResult<SspSlotInfoDO> getSlotInfoPage(SspSlotInfoPageReqVO pageReqVO) {
+
+        String time = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         Long offset = (pageReqVO.getPageNo() - 1L) * pageReqVO.getPageSize();
         List<SspSlotInfoDO> list = slotInfoMapper.selectPage(pageReqVO, offset, pageReqVO.getPageSize());
         for (SspSlotInfoDO sspSlotInfo : list) {
             Long id = sspSlotInfo.getId();
             List<LaunchDO> launchDOS = launchMapper.selectLaunchBySspSlotId(id);
             sspSlotInfo.setLs(launchDOS.size());
+
+            SspSlotDayDO sspSlotDayDO = spSlotDayMapper.selectRequestCount(sspSlotInfo.getId(), time);
+            if (sspSlotDayDO != null) {
+                sspSlotInfo.setReqCount(sspSlotDayDO.getReqCount());
+            }
+
+
         }
 
         Long total = slotInfoMapper.selectPageCount(pageReqVO);
@@ -154,7 +178,8 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
             etcdData.put("ad_scene", slotInfo.getAdScene() != null ? slotInfo.getAdScene() : 0);
             etcdData.put("ssp_pay_type", slotInfo.getSspPayType() != null ? slotInfo.getSspPayType() : 0);
             etcdData.put("ssp_deal_ratio", slotInfo.getSspDealRatio() != null ?
-                slotInfo.getSspDealRatio() / 100.0 : 0.0); // 将整数转换为百分比
+                slotInfo.getSspDealRatio() : 0); // 将整数转换为百分比
+            // osType 为关联字段（ssp_app.os_type），同步前应使用 selectSlotInfoById 查全量
             etcdData.put("os_type", slotInfo.getOsType());
             etcdData.put("app_id", slotInfo.getAppId() != null ? slotInfo.getAppId() : 0);
 

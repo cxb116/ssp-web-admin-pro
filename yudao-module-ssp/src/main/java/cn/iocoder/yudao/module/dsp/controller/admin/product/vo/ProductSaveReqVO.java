@@ -20,4 +20,8 @@ public class ProductSaveReqVO {
     @NotNull(message = "公司id不能为空")
     private Long companyId;
 
+    @Schema(description = "操作系统类型 1=Android，2=iOS", example = "1")
+    @NotNull(message = "操作系统类型不能为空")
+    private Integer osType;
+
 }

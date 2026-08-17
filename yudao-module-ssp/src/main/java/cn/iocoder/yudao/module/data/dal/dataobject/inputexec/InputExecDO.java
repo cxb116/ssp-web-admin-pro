@@ -39,9 +39,7 @@ public class InputExecDO extends BaseDO {
     /**
      * 导入时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date inputTime;
+    private String inputTime;
 
     /**
      * 公司名称（非表字段，关联查询获取）

@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.data.service.sspslothour;
 import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.data.controller.admin.sspslothour.vo.*;
+import cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO;
 import cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
@@ -58,5 +59,13 @@ public interface SspSlotHourService {
      * @return DSP-SSP广告位报分页
      */
     PageResult<SspSlotHourDO> getSspSlotHourPage(SspSlotHourPageReqVO pageReqVO);
+
+    /**
+     *  ssp 查询dsp小时表数据
+     * @param dspSlotId
+     * @param date
+     * @return
+     */
+    List<SspSlotHourDO> getSspDspSlotHour(Long dspSlotId, Long date);
 
 }

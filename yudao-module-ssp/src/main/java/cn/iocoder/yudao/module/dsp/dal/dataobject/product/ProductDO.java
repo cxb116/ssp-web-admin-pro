@@ -36,6 +36,12 @@ public class ProductDO extends BaseDO {
      */
     private Long companyId;
     /**
+     * 操作系统类型
+     *
+     * 枚举 1=Android，2=iOS
+     */
+    private Integer osType;
+    /**
      * 公司名称
      */
     @TableField(exist = false)

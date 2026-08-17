@@ -10,23 +10,147 @@
     -->
 
     <select id="selectDspSlotDayPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
-        SELECT day.*
-        FROM data_dsp_slot_day AS day
+        SELECT
 
+        day1.dsp_slot_id AS dsp_slot_id,
+        day1.date AS date,
+        SUM(day1.show_pv) AS show_pv,
+        SUM(day1.click_pv) AS click_pv,
+        SUM(day1.req_pv) AS req_pv,
+        SUM(day1.discard) AS discard,
+        SUM(day1.ret_pv) AS ret_pv,
+        SUM(day1.spend) AS spend,
+        SUM(day1.income) AS income,
+        SUM(day1.discount_click_pv) AS discount_click_pv,
+        SUM(day1.discount_show_pv) AS discount_show_pv,
+        SUM(day1.dplsucc_pv) AS dplsucc_pv,
+        SUM(day1.complete_pv) AS complete_pv,
+        SUM(day1.install_pv) AS install_pv,
+        SUM(day1.activate_pv) AS activate_pv,
+
+        MAX(day1.dsp_slot_code) AS dspSlotCode,
+        MAX(dsp.name) AS dspName,
+        MAX(com.name) AS companyName,
+        MAX(pro.name) AS  productName,
+        MAX(ssp.name_alise) AS  sspName,
+        MAX(app.name) AS  appName,
+        MAX(app.os_type) AS  osType,
+        MAX(media.media_company_short) AS mediaName
+
+        FROM data_dsp_slot_day AS day1
+        LEFT JOIN dsp_slot_info AS dsp ON dsp.id = day1.dsp_slot_id
+        LEFT JOIN dsp_company AS com ON com.id = dsp.company_id
+        LEFT JOIN dsp_product AS pro ON pro.id = dsp.product_id
+        LEFT JOIN ssp_slot_info AS ssp ON ssp.id = day1.ssp_slot_id
+        LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+        LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
         <where>
-            day.deleted = 0
-            <if test="reqVO.dspSlotId != null">
-                AND day.dsp_slot_id = #{reqVO.dspSlotId}
+            <if test="reqVO.date != null and reqVO.date.size() >= 2">
+                AND day1.date BETWEEN REPLACE(#{reqVO.date[0]}, '-', '') AND REPLACE(#{reqVO.date[1]}, '-', '')
+            </if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">
+                AND day1.dsp_slot_id IN
+                <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCodes != null and reqVO.dspSlotCodes.size() > 0">
+                AND day1.dsp_slot_code IN
+                <foreach collection="reqVO.dspSlotCodes" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
             </if>
             <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
-                AND day.dsp_slot_code = #{reqVO.dspSlotCode}
+                AND day1.dsp_slot_code = #{reqVO.dspSlotCode}
             </if>
-            <if test="reqVO.sspSlotId != null">
-                AND day.ssp_slot_id = #{reqVO.sspSlotId}
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">
+                AND day1.ssp_slot_id IN
+                <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.companyId != null">
+                AND dsp.company_id = #{reqVO.companyId}
+            </if>
+            <if test="reqVO.productId != null and reqVO.productId.length > 0">
+                AND dsp.product_id IN
+                <foreach collection="reqVO.productId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.osType != null">
+                AND app.os_type = #{reqVO.osType}
             </if>
         </where>
-        ORDER BY day.id DESC
+        GROUP BY
+        day1.dsp_slot_id,
+        day1.date
+
+        ORDER BY day1.date DESC
     </select>
+
+    <select id="getDspSlotDayPageDetail" resultType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
+
+        SELECT
+            day1.*,
+            day1.dsp_slot_code AS dspSlotCode,
+        dsp.name AS dspName,
+        com.name AS companyName,
+        pro.name AS  productName,
+        ssp.name_alise AS  sspName,
+        app.name AS  appName,
+        app.os_type AS  osType,
+        media.media_company_short AS mediaName
+
+        FROM data_dsp_slot_day AS day1
+        LEFT JOIN dsp_slot_info AS dsp ON dsp.id = day1.dsp_slot_id
+        LEFT JOIN dsp_company AS com ON com.id = dsp.company_id
+        LEFT JOIN dsp_product AS pro ON pro.id = dsp.product_id
+        LEFT JOIN ssp_slot_info AS ssp ON ssp.id = day1.ssp_slot_id
+        LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+        LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
+        <where>
+            <if test="reqVO.date != null and reqVO.date.size() >= 2">
+                AND day1.date BETWEEN REPLACE(#{reqVO.date[0]}, '-', '') AND REPLACE(#{reqVO.date[1]}, '-', '')
+            </if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">
+                AND day1.dsp_slot_id IN
+                <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCodes != null and reqVO.dspSlotCodes.size() > 0">
+                AND day1.dsp_slot_code IN
+                <foreach collection="reqVO.dspSlotCodes" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND day1.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">
+                AND day1.ssp_slot_id IN
+                <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.companyId != null">
+                AND dsp.company_id = #{reqVO.companyId}
+            </if>
+            <if test="reqVO.productId != null and reqVO.productId.length > 0">
+                AND dsp.product_id IN
+                <foreach collection="reqVO.productId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.osType != null">
+                AND app.os_type = #{reqVO.osType}
+            </if>
+        </where>
+        ORDER BY day1.date DESC
+    </select>
+
+
 
     <!--
         根据 ID 查询
@@ -35,23 +159,29 @@
         SELECT day.*
         FROM data_dsp_slot_day AS day
         WHERE day.id = #{id}
-          AND day.deleted = 0
     </select>
 
     <!--
-        根据 sspSlotId 和 date 查询 SSP 媒体子表天表数据
+        根据 sspSlotId 和 date 查询预算广告位日报子表数据
+        注意：关联表 deleted 条件放在 ON 中，避免 LEFT JOIN 失效导致查不到主表数据
     -->
     <select id="getSSPDspSlotDay" resultType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
-        SELECT day.*,com.name AS companyName, pro.name as productName
+        SELECT day.*, com.name AS companyName, pro.name AS productName,dsp.name AS dspName
         FROM data_dsp_slot_day AS day
         LEFT JOIN dsp_slot_info AS dsp ON dsp.id = day.dsp_slot_id
         LEFT JOIN dsp_company AS com ON dsp.company_id = com.id
         LEFT JOIN dsp_product AS pro ON dsp.product_id = pro.id
         WHERE day.ssp_slot_id = #{sspSlotId}
           AND day.date = #{date}
-          AND day.deleted = 0
-          AND pro.deleted = 0 AND com.deleted = 0 AND dsp.deleted = 0
         ORDER BY day.id DESC
     </select>
+
+    <update id="updateSsspSlotDay" parameterType="cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO">
+        UPDATE data_dsp_slot_day
+        SET income = #{income}, spend = #{spend}
+        WHERE ssp_slot_id = #{sspSlotId}
+          AND dsp_slot_code = #{dspSlotCode}
+          AND date = #{date}
+    </update>
 
 </mapper>

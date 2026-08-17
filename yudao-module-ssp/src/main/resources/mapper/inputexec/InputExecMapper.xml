@@ -14,7 +14,6 @@
         FROM dsp_input_exec AS exec
         LEFT JOIN dsp_company AS com ON exec.company_id = com.id
         <where>
-            exec.deleted = 0
             <if test="reqVO.companyId != null">
                 AND exec.company_id = #{reqVO.companyId}
             </if>
@@ -34,17 +33,23 @@
      SELECT DISTINCT
          exec.*,
          dsp.dsp_slot_code AS dspSlotCode,
-         ssp.id AS sspSlotId,
+         ssp_slot.ssp_slot_id AS sspSlotId,
          media.media_company_short AS mediaCompany
      FROM dsp_input_exec AS exec
-     LEFT JOIN dsp_slot_info AS dsp ON dsp.company_id = exec.company_id AND dsp.deleted = 0
-     LEFT JOIN ssp_slot_slot AS ssp_slot ON ssp_slot.dsp_slot_id = dsp.id AND ssp_slot.deleted = 0
-     LEFT JOIN ssp_slot_info AS ssp ON ssp.id = ssp_slot.ssp_slot_id AND ssp.deleted = 0
-     LEFT JOIN ssp_media AS media ON media.id = ssp.media_id AND media.deleted = 0
-     WHERE exec.input_time = #{inputTime}
+     LEFT JOIN dsp_slot_info AS dsp ON dsp.company_id = exec.company_id
+     LEFT JOIN data_dsp_slot_day AS ssp_slot ON ssp_slot.dsp_slot_id = dsp.id AND ssp_slot.date = DATE_FORMAT(#{inputTime}, '%Y%m%d')
+     LEFT JOIN ssp_slot_info AS ssp ON ssp.id = ssp_slot.ssp_slot_id
+     LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
+     WHERE exec.input_time =  DATE_FORMAT(#{inputTime}, '%Y%m%d')
        AND exec.company_id = #{id}
-       AND exec.deleted = 0
-     ORDER BY exec.id DESC
-
+       ORDER BY exec.id DESC
     </select>
+
+    <update id="updateInputExec" parameterType="cn.iocoder.yudao.module.data.dal.dataobject.inputexec.InputExecDO">
+        UPDATE dsp_input_exec
+        SET update_time = #{updateTime}
+        WHERE id = #{id}
+          AND input_time = #{inputTime}
+    </update>
+
 </mapper>

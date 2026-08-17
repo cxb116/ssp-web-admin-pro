@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.dsp.service.dspslotinfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.etcd.client.EtcdClient;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.product.ProductDO;
+import cn.iocoder.yudao.module.dsp.dal.mysql.product.ProductMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,12 +53,18 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
     @Value("${yudao.etcd.dsp.prefix:/dsp/config}")
     private String etcdPrefix;
 
+
+
+    @Resource
+    private ProductMapper productMapper;
+
     @Override
     public Long createSlotInfo(DspSlotInfoSaveReqVO createReqVO) {
         // 插入
         DspSlotInfoDO slotInfo = BeanUtils.toBean(createReqVO, DspSlotInfoDO.class);
         slotInfoMapper.insert(slotInfo);
-
+        ProductDO productDO = productMapper.selectById(slotInfo.getProductId());
+        slotInfo.setProductName(productDO.getName());
         // 同步到etcd
         syncToEtcd(slotInfo);
 
@@ -70,8 +78,11 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         validateSlotInfoExists(updateReqVO.getId());
         // 更新
         DspSlotInfoDO updateObj = BeanUtils.toBean(updateReqVO, DspSlotInfoDO.class);
-        slotInfoMapper.updateById(updateObj);
 
+
+        slotInfoMapper.updateById(updateObj);
+        ProductDO productDO = productMapper.selectById(updateObj.getProductId());
+        updateObj.setProductName(productDO.getName());
         // 同步到etcd
         syncToEtcd(updateObj);
     }
@@ -128,6 +139,13 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
     public PageResult<DspSlotInfoDO> getSlotInfoPage(DspSlotInfoPageReqVO pageReqVO) {
         Long offset = (pageReqVO.getPageNo() - 1L) * pageReqVO.getPageSize();
         List<DspSlotInfoDO> list = slotInfoMapper.selectPage(pageReqVO, offset, pageReqVO.getPageSize());
+
+        for (DspSlotInfoDO dspSlotInfoDO : list) {
+            List<LaunchDO> launchDOS = launchMapper.selectLaunchByDspSlotId(dspSlotInfoDO.getId());
+            dspSlotInfoDO.setLs(launchDOS.size());
+
+        }
+
         Long total = slotInfoMapper.selectPageCount(pageReqVO);
         return new PageResult<>(list, total);
     }
@@ -162,7 +180,7 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
             etcdData.put("price_encrypt_key", slotInfo.getPriceEncryptKey() != null ? slotInfo.getPriceEncryptKey() : "");
             etcdData.put("dsp_app_store_link", slotInfo.getDspAppStoreLink() != null ? slotInfo.getDspAppStoreLink() : "");
             etcdData.put("dsp_pay_type", slotInfo.getDspPayType() != null ? slotInfo.getDspPayType() : 0);
-            etcdData.put("dsp_deal_ratio", 0.7); // 默认值，可根据实际需求调整
+//            etcdData.put("dsp_deal_ratio", 0.7); // 默认值，可根据实际需求调整
 
             String etcdValue = JSONUtil.toJsonStr(etcdData);
 

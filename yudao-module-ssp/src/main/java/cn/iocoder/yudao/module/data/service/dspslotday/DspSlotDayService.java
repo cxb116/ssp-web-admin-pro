@@ -3,9 +3,11 @@ package cn.iocoder.yudao.module.data.service.dspslotday;
 import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.data.controller.admin.dspslotday.vo.*;
+import cn.iocoder.yudao.module.data.controller.admin.sspslotday.vo.SspSlotDayPageReqVO;
 import cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO;
 
 /**
  * DSP预算广告位日期报 Service 接口
@@ -59,10 +61,29 @@ public interface DspSlotDayService {
      */
     PageResult<DspSlotDayDO> getDspSlotDayPage(DspSlotDayPageReqVO pageReqVO);
 
+
+
+    PageResult<DspSlotDayRespExecVo> getDspSlotDayExceVo(DspSlotDayPageReqVO pageReqVO);
     /**
      *  获取SSP媒体子表天表数据
      * @param sspSlotId
      * @return
      */
     List<DspSlotDayDO> getSSPDspSlotDay(Long sspSlotId, int date);
+
+    /**
+     * 合计
+     * @param date
+     * @return
+     */
+    DspSlotDayRespVO getDspSlotDaySum(Long date);
+
+    /**
+     * 预算详情信息
+     * @param pageReqVO
+     * @return
+     */
+    PageResult<DspSlotDayDO> getDspSlotDayPageDetail(@Valid DspSlotDayPageReqVO pageReqVO);
+
+//    PageResult<DspSlotDayRespExecVo> getDspSlotDayDeatil(@Valid SspSlotDayPageReqVO pageReqVO);
 }

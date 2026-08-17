@@ -13,11 +13,14 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @Data
 public class DspSlotInfoPageReqVO extends PageParam {
 
-    @Schema(description = "预算方广告位")
-    private String dspSlotCode;
+    @Schema(description = "内部广告ID")
+    private List<Long> id;
 
-    @Schema(description = "产品ID", example = "31959")
-    private Long productId;
+    @Schema(description = "预算方广告位")
+    private List<String> dspSlotCode;
+
+    @Schema(description = "产品ID列表", example = "31959")
+    private List<Long> productId;
 
     @Schema(description = "公司ID", example = "16821")
     private Long companyId;
@@ -47,4 +50,7 @@ public class DspSlotInfoPageReqVO extends PageParam {
 
     @Schema(description = "媒体广告位ID")
     private Long sspSlotId;
+
+    @Schema(description = "预算广告位ID")
+    private Long dspSlotId;
 }

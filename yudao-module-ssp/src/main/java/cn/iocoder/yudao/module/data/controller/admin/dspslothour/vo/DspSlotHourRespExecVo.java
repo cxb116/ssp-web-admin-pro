@@ -1,20 +1,22 @@
-package cn.iocoder.yudao.module.data.controller.admin.dspslotday.vo;
+package cn.iocoder.yudao.module.data.controller.admin.dspslothour.vo;
 
+import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
+import cn.idev.excel.annotation.ExcelProperty;
+import cn.iocoder.yudao.framework.excel.core.annotations.DictFormat;
+import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import cn.idev.excel.annotation.*;
+import lombok.Data;
 
-@Schema(description = "管理后台 - DSP预算广告位日期报 Response VO")
+@Schema(description = "管理后台 - DSP预算广告位小时报导出 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class DspSlotDayRespVO {
+public class DspSlotHourRespExecVo {
 
-    @Schema(description = "主键", requiredMode = Schema.RequiredMode.REQUIRED, example = "25594")
+    @Schema(description = "主键", requiredMode = Schema.RequiredMode.REQUIRED, example = "31172")
 //    @ExcelProperty("主键")
     private Long id;
 
-    @Schema(description = "时间")
+    @Schema(description = "时间(yyyyMMdd / yyyyMMddHH)")
     @ExcelProperty("时间")
     private Integer date;
 
@@ -22,26 +24,50 @@ public class DspSlotDayRespVO {
     @ExcelProperty("预算位名称")
     private String dspName;
 
-    @Schema(description = "预算位ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "7185")
-//    @ExcelProperty("预算位ID")
-    private Long dspSlotId;
-
-    @Schema(description = "预算广告位ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "预算广告位", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("预算广告位ID")
     private String dspSlotCode;
 
-    @Schema(description = "媒体广告ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "9273")
-//    @ExcelProperty("媒体广告ID")
-    private Long sspSlotId;
+    @Schema(description = "预算位ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "20637")
+    @ExcelProperty("预算位ID")
+    private Long dspSlotId;
 
+    @Schema(description = "公司名称")
+    @ExcelProperty("预算公司名称")
+    private String companyName;
 
     @Schema(description = "产品名称")
     @ExcelProperty("预算产品名称")
     private String productName;
 
+    @Schema(description = "SSP slot id", requiredMode = Schema.RequiredMode.REQUIRED, example = "26099")
+    @ExcelProperty("媒体广告位ID")
+    private Long sspSlotId;
+
+    @Schema(description = "媒体名称")
+    @ExcelProperty("媒体名称")
+    private String mediaName;
+
+    @Schema(description = "媒体广告位名称")
+    @ExcelProperty("媒体广告位名称")
+    private String sspName;
+
+    @Schema(description = "应用名称")
+    @ExcelProperty("应用名称")
+    private String appName;
+
+    @Schema(description = "操作系统 1=Android 2=iOS")
+    @ExcelProperty(value = "操作系统", converter = DictConvert.class)
+    @DictFormat("ssp_os_type")
+    private Integer osType;
+
     @Schema(description = "请求PV")
     @ExcelProperty("请求PV")
     private Long reqPv;
+
+    @Schema(description = "请求UV")
+//    @ExcelProperty("请求UV")
+    private Long reqUv;
 
     @Schema(description = "丢弃请求")
     @ExcelProperty("丢弃请求")
@@ -51,6 +77,9 @@ public class DspSlotDayRespVO {
     @ExcelProperty("返回PV")
     private Long retPv;
 
+    @Schema(description = "返回UV")
+//    @ExcelProperty("返回UV")
+    private Long retUv;
 
     @Schema(description = "展示PV")
     @ExcelProperty("展示PV")
@@ -68,21 +97,9 @@ public class DspSlotDayRespVO {
 //    @ExcelProperty("点击UV")
     private Long clickUv;
 
-
-
-    @Schema(description = "请求UV")
-//    @ExcelProperty("请求UV")
-    private Long reqUv;
-
-
-
-    @Schema(description = "返回UV")
-//    @ExcelProperty("返回UV")
-    private Long retUv;
-
-@Schema(description = "填充率")
-@ExcelProperty("填充率")
-private Double fillRate;
+    @Schema(description = "填充率")
+    @ExcelProperty("填充率")
+    private Double fillRate;
 
     @Schema(description = "展现率")
     @ExcelProperty("展现率")
@@ -116,29 +133,9 @@ private Double fillRate;
     @ExcelProperty("激活量")
     private Long activatePv;
 
-
-
     @Schema(description = "创建时间戳")
 //    @ExcelProperty("创建时间戳")
     private Integer createdAt;
-
-
-
-    @Schema(description = "公司名称")
-//    @ExcelProperty("公司名称")
-    private String companyName;
-
-    @Schema(description = "媒体广告位名称")
-    private String sspName;
-
-    @Schema(description = "应用名称")
-    private String appName;
-
-    @Schema(description = "操作系统 1=Android 2=iOS")
-    private Integer osType;
-
-    @Schema(description = "媒体名称")
-    private String mediaName;
 
     @Schema(description = "媒体ecpm（媒体千次展示收益）")
     @ExcelProperty("媒体ecpm")
@@ -155,7 +152,6 @@ private Double fillRate;
     @Schema(description = "ecprm（预算百万请求收益）")
     @ExcelProperty("ecprm")
     private Double ecprm;
-
 
     @Schema(description = "成本(分)")
     @ExcelProperty("成本(分)")

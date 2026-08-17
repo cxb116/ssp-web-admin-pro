@@ -94,7 +94,7 @@ public class AppController {
     @ApiAccessLog(operateType = EXPORT)
     public void exportAppExcel(@Valid AppPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        pageReqVO.setPageSize(5000);
         List<AppDO> list = appService.getAppPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "媒体应用.xls", "数据", AppRespVO.class,

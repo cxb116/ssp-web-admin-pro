@@ -26,4 +26,16 @@ public interface ProductMapper extends BaseMapperX<ProductDO> {
      */
     Long selectPageCount(@Param("reqVO") ProductPageReqVO reqVO);
 
+    /**
+     * 根据公司ID和产品名称查询产品数量（用于重名校验）
+     *
+     * @param companyId 公司ID
+     * @param name      产品名称
+     * @param excludeId 排除的产品ID（更新时使用，创建时传 null）
+     * @return 数量
+     */
+    Long selectCountByCompanyIdAndName(@Param("companyId") Long companyId,
+                                       @Param("name") String name,
+                                       @Param("excludeId") Long excludeId);
+
 }

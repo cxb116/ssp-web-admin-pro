@@ -116,6 +116,50 @@ public class SspSlotHourRespVO {
     @ExcelProperty("创建时间戳")
     private Long createdAt;
 
+    @Schema(description = "媒体公司简称")
+    @ExcelProperty("媒体公司简称")
+    private String mediaName;
+
+    @Schema(description = "应用名称")
+    @ExcelProperty("应用名称")
+    private String appName;
+
+    @Schema(description = "操作系统类型")
+    @ExcelProperty("操作系统类型")
+    private Integer osType;
+
+    @Schema(description = "SSP名称")
+    @ExcelProperty("SSP名称")
+    private String sspName;
+
+    @Schema(description = "填充率")
+    @ExcelProperty("填充率")
+    private Double fillRate;
+
+    @Schema(description = "展现率")
+    @ExcelProperty("展现率")
+    private Double displayRate;
+
+    @Schema(description = "点击率")
+    @ExcelProperty("点击率")
+    private Double clickRate;
+
+    @Schema(description = "ecpm（预算千次展示收益）")
+    @ExcelProperty("ecpm")
+    private Double ecpm;
+
+    @Schema(description = "媒体ecpm（媒体千次展示收益）")
+    @ExcelProperty("媒体ecpm")
+    private Double mediaEcpm;
+
+    @Schema(description = "ecprm（预算百万请求收益）")
+    @ExcelProperty("ecprm")
+    private Double ecprm;
+
+    @Schema(description = "媒体ecprm（媒体百万请求收益）")
+    @ExcelProperty("媒体ecprm")
+    private Double mediaEcprm;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;

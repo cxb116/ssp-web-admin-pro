@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.Operation;
 
 import javax.validation.constraints.*;
@@ -28,6 +29,7 @@ import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import cn.iocoder.yudao.module.data.controller.admin.inputexec.vo.*;
 import cn.iocoder.yudao.module.data.dal.dataobject.inputexec.InputExecDO;
 import cn.iocoder.yudao.module.data.service.inputexec.InputExecService;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "管理后台 - DSP数据导入")
 @RestController
@@ -109,12 +111,12 @@ public class InputExecController {
             vo.setDspSlotCode(exec.getDspSlotCode());
             vo.setSspSlotId(exec.getSspSlotId());
             vo.setMediaCompany(exec.getMediaCompany());
-            // 成本、结算方式、结算比例由用户在Excel中填写
+            vo.setSettleType("分成");
             return vo;
         }).collect(java.util.stream.Collectors.toList());
 
         // 导出 Excel 模板
-        ExcelUtils.write(response, "DSP数据导入模板.xls", "模板数据", InputExecTemplateVO.class, templateList);
+        ExcelUtils.write(response, "DSP数据导入模板.xls", "模板数据", InputExecTemplateVO.class, templateList, false);
     }
 
 
@@ -129,6 +131,20 @@ public class InputExecController {
         // 导出 Excel
         ExcelUtils.write(response, "DSP数据导入.xls", "数据", InputExecRespVO.class,
                         BeanUtils.toBean(list, InputExecRespVO.class));
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入DSP数据导入 Excel")
+    @Parameters({
+            @Parameter(name = "file", description = "Excel 文件", required = true),
+            @Parameter(name = "id", description = "公司ID", required = true)
+    })
+    @PreAuthorize("@ss.hasPermission('data:input-exec:export')")
+    public CommonResult<String> importExecExcel(@RequestParam("file") MultipartFile file,
+                                                 @RequestParam("id") Long id) throws Exception {
+        List<InputExecTemplateVO> list = ExcelUtils.read(file, InputExecTemplateVO.class);
+        String result = inputExecService.importExecList(list, id);
+        return success(result);
     }
 
 }

@@ -200,16 +200,17 @@ public class LaunchServiceImpl implements LaunchService {
             etcdData.put("ssp_slot_id", launch.getSspSlotId() != null ? launch.getSspSlotId() : 0);
             etcdData.put("dsp_slot_id", launch.getDspSlotId() != null ? launch.getDspSlotId() : 0);
             etcdData.put("traffic_weight", launch.getTrafficWeight() != null ? launch.getTrafficWeight() : 100);
-            etcdData.put("launch_strategy", launch.getTrafficGroup() != null ? launch.getTrafficGroup() : 1);
-            etcdData.put("floor_price", launch.getFloorPrice() != null ? launch.getFloorPrice() / 1000000.0 : 0.000100);
-            etcdData.put("ip_limit", 1000); // 默认值，可根据需要调整
-            etcdData.put("track_schwarz", ""); // 追踪字符串，暂无此字段
-            etcdData.put("log_capture_at", 1); // 默认值
+            etcdData.put("traffic_group", launch.getTrafficGroup() != null ? launch.getTrafficGroup() : 1);
+            etcdData.put("floor_price", launch.getFloorPrice() != null ? launch.getFloorPrice() : 0);
+            etcdData.put("dsp_pay_ratio", launch.getDspPayRatio()); // 默认值，可根据需要调整
+
+            etcdData.put("launch_hour", launch.getLaunchHour()); // 默认值
             etcdData.put("launch_time", launch.getLogTime() != null ? launch.getLogTime() : System.currentTimeMillis());
-            etcdData.put("crowd_direction", 0); // 默认值
-            etcdData.put("region_direction", 0); // 默认值
-            etcdData.put("brand_direction", 0); // 默认值
-            etcdData.put("indexs", launch.getTrafficGroup() != null ? launch.getTrafficGroup() : 1);
+            etcdData.put("log_time", launch.getLogTime()); // 默认值
+            etcdData.put("req", launch.getReq()); // 默认值
+            etcdData.put("ims",launch.getIms()); // 默认值
+            etcdData.put("clk", launch.getClk());
+            etcdData.put("pkg_trans",launch.getPkgTrans());
 
             String etcdValue = JSONUtil.toJsonStr(etcdData);
 

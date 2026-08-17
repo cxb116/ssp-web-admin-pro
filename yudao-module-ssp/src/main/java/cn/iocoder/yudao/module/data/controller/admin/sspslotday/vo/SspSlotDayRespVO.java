@@ -11,56 +11,53 @@ import cn.idev.excel.annotation.*;
 public class SspSlotDayRespVO {
 
     @Schema(description = "主键", requiredMode = Schema.RequiredMode.REQUIRED, example = "19230")
-    @ExcelProperty("主键")
+//    @ExcelProperty("主键")
     private Long id;
 
+    @Schema(description = "日期 ")
+    @ExcelProperty("日期 ")
+    private Long date;
+
+    @Schema(description = "媒体公司简称")
+    @ExcelProperty("媒体简称")
+    private String mediaName;
+
+
+    @Schema(description = "媒体广告位名称")
+    @ExcelProperty("媒体广告位名称")
+    private String sspName;
+
     @Schema(description = "媒体用户Id", requiredMode = Schema.RequiredMode.REQUIRED, example = "27526")
-    @ExcelProperty("媒体用户Id")
+//    @ExcelProperty("媒体用户Id")
     private Long mediaId;
 
     @Schema(description = "应用ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "11968")
-    @ExcelProperty("应用ID")
+//    @ExcelProperty("应用ID")
     private Long appId;
 
     @Schema(description = "SSP广告位ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "25423")
-    @ExcelProperty("SSP广告位ID")
+    @ExcelProperty("媒体广告位ID")
     private Long sspSlotId;
 
+    @Schema(description = "应用名称")
+    @ExcelProperty("应用名称")
+    private String appName;
+
     @Schema(description = "DSP广告位ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32391")
-    @ExcelProperty("DSP广告位ID")
+//    @ExcelProperty("DSP广告位ID")
     private Long dspSlotId;
 
     @Schema(description = "预算广告位编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("预算广告位编号")
+//    @ExcelProperty("预算广告位编号")
     private String dspSlotCode;
 
-    @Schema(description = "展示PV")
-    @ExcelProperty("展示PV")
-    private Long showPv;
-
-    @Schema(description = "展示UV")
-    @ExcelProperty("展示UV")
-    private Long showUv;
-
-    @Schema(description = "点击PV")
-    @ExcelProperty("点击PV")
-    private Long clickPv;
-
-    @Schema(description = "点击UV")
-    @ExcelProperty("点击UV")
-    private Long clickUv;
-
-    @Schema(description = "请求PV")
-    @ExcelProperty("请求PV")
-    private Long reqPv;
+    @Schema(description = "操作系统")
+    @ExcelProperty("操作系统")
+    private Integer osType;
 
     @Schema(description = "请求数", example = "20130")
-    @ExcelProperty("请求数")
+    @ExcelProperty("请求PV")  //TODO 请求数
     private Long reqCount;
-
-    @Schema(description = "请求UV")
-    @ExcelProperty("请求UV")
-    private Long reqUv;
 
     @Schema(description = "丢弃请求")
     @ExcelProperty("丢弃请求")
@@ -70,17 +67,50 @@ public class SspSlotDayRespVO {
     @ExcelProperty("返回PV")
     private Long retPv;
 
+
+    @Schema(description = "展示PV")
+    @ExcelProperty("展示PV")
+    private Long showPv;
+
+    @Schema(description = "展示UV")
+//    @ExcelProperty("展示UV")
+    private Long showUv;
+
+    @Schema(description = "点击PV")
+    @ExcelProperty("点击PV")
+    private Long clickPv;
+
+    @Schema(description = "点击UV")
+//    @ExcelProperty("点击UV")
+    private Long clickUv;
+
+    @Schema(description = "请求PV")
+//    @ExcelProperty("请求PV")
+    private Long reqPv;
+
+
+
+    @Schema(description = "请求UV")
+//    @ExcelProperty("请求UV")
+    private Long reqUv;
+
+
     @Schema(description = "返回UV")
-    @ExcelProperty("返回UV")
+//    @ExcelProperty("返回UV")
     private Long retUv;
 
-    @Schema(description = "成本(分)")
-    @ExcelProperty("成本(分)")
-    private Long spend;
 
-    @Schema(description = "收入(分)")
-    @ExcelProperty("收入(分)")
-    private Long income;
+    @Schema(description = "填充率")
+    @ExcelProperty("填充率")
+    private Double fillRate;
+
+    @Schema(description = "展现率")
+    @ExcelProperty("展现率")
+    private Double displayRate;
+
+    @Schema(description = "点击率")
+    @ExcelProperty("点击率")
+    private Double clickRate;
 
     @Schema(description = "折后点击")
     @ExcelProperty("折后点击")
@@ -106,28 +136,34 @@ public class SspSlotDayRespVO {
     @ExcelProperty("激活量")
     private Long activatePv;
 
-    @Schema(description = "日期 ")
-    @ExcelProperty("日期 ")
-    private Long date;
-
     @Schema(description = "创建时间戳")
-    @ExcelProperty("创建时间戳")
+//    @ExcelProperty("创建时间戳")
     private Long createdAt;
 
-    @Schema(description = "媒体公司简称")
-    @ExcelProperty("媒体公司简称")
-    private String meidaName;
+    @Schema(description = "媒体ecpm（媒体千次展示收益）")
+    @ExcelProperty("媒体ecpm")
+    private Long mediaEcpm;
 
-    @Schema(description = "应用名称")
-    @ExcelProperty("应用名称")
-    private String appName;
 
-    @Schema(description = "操作系统类型")
-    @ExcelProperty("操作系统类型")
-    private String osType;
+    @Schema(description = "ecpm（预算千次展示收益）")
+    @ExcelProperty("ecpm")
+    private Long ecpm;
 
-    @Schema(description = "SSP名称")
-    @ExcelProperty("SSP名称")
-    private String sspName;
+    @Schema(description = "媒体ecprm（媒体百万请求收益）")
+    @ExcelProperty("媒体ecprm")
+    private Long mediaEcprm;
+
+    @Schema(description = "ecprm（预算百万请求收益）")
+    @ExcelProperty("ecprm")
+    private Long ecprm;
+
+
+    @Schema(description = "成本(分)")
+    @ExcelProperty("成本(分)")
+    private Long spend;
+
+    @Schema(description = "收入(分)")
+    @ExcelProperty("收入(分)")
+    private Long income;
 
 }

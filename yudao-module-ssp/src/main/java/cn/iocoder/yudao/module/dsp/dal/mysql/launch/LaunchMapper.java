@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.dsp.controller.admin.launch.vo.*;
 
@@ -66,4 +67,12 @@ public interface LaunchMapper extends BaseMapperX<LaunchDO> {
      * @return
      */
     List<LaunchDO> getLaunchSspSlotList(Long id);
+
+    /**
+     * 查询绑定条数
+     * @param sspSlotId
+     * @param id
+     * @return
+     */
+    List<LaunchDO> selectLaunchBySspSlotIdDspSlotId(@Param("sspSlotId") Long sspSlotId, @Param("dspSlotId") Long dspSlotId);
 }

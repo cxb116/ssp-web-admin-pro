@@ -88,14 +88,17 @@ public class DspSlotHourController {
         return success(BeanUtils.toBean(pageResult, DspSlotHourRespVO.class));
     }
 
-//    @GetMapping("/page-dsp")
-//    @Operation(summary = "获得DSP预算广告位小时报列表")
-//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
-//    public CommonResult<List<DspSlotHourRespVO>> getDspSlotHourPageDsp(@Valid DspSlotHourPageReqVO pageReqVO) {
-//        List<DspSlotHourDO> list = dspSlotHourService.getDspSlotHourPageDsp(pageReqVO);
-//        return success(BeanUtils.toBean(list, DspSlotHourRespVO.class));
-//    }
-
+    @GetMapping("/dsp_ssp_hour")
+    @Operation(summary = "获得媒体广告位小时报子表（按 sspSlotId + date 查预算位明细）")
+    @Parameter(name = "sspSlotId", description = "媒体广告位ID", required = true, example = "1024")
+    @Parameter(name = "date", description = "时间 yyyyMMddHH", required = true, example = "2026071510")
+    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+    public CommonResult<List<DspSlotHourRespVO>> getSSPDspSlotHour(
+            @RequestParam("sspSlotId") Long sspSlotId,
+            @RequestParam("date") Integer date) {
+        List<DspSlotHourDO> list = dspSlotHourService.getDspSspSlotHour(sspSlotId, date);
+        return success(BeanUtils.toBean(list, DspSlotHourRespVO.class));
+    }
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出DSP预算广告位小时报 Excel")
@@ -110,4 +113,15 @@ public class DspSlotHourController {
                         BeanUtils.toBean(list, DspSlotHourRespVO.class));
     }
 
+    @GetMapping("/export-excel-detail")
+    @Operation(summary = "导出DSP预算广告位小时报详情 Excel")
+    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")
+    @ApiAccessLog(operateType = EXPORT)
+    public void exportDspSlotHourExcelDetail(@Valid DspSlotHourPageReqVO pageReqVO,
+              HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        List<DspSlotHourRespExecVo> list = dspSlotHourService.getDspSlotHourExceVo(pageReqVO).getList();
+        // 导出 Excel
+        ExcelUtils.write(response, "DSP预算广告位小时报.xls", "数据", DspSlotHourRespExecVo.class, list);
+    }
 }

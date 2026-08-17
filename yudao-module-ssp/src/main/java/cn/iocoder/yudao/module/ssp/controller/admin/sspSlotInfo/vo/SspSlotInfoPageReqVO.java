@@ -14,22 +14,26 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 public class SspSlotInfoPageReqVO extends PageParam {
 
     @Schema(description = "ID", example = "1")
-    private Long id;
+    private List<Long> id;
 
     @Schema(description = "媒体id", example = "2958")
     private Long mediaId;
 
     @Schema(description = "应用id", example = "19705")
-    private Long appId;
+    private List<Long> appId;
 
     @Schema(description = "广告位名称", example = "芋艿")
-    private String name;
+    private List<String> name;
 
     @Schema(description = "内部广告位名称")
-    private String nameAlise;
+    private List<String> nameAlise;
 
     @Schema(description = "广告场景")
     private Long adScene;
+
+    @Schema(description = "操作系统")
+    private Long osType;
+
 
     @Schema(description = "结算方式", example = "1")
     private Integer sspPayType;

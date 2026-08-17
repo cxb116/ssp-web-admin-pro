@@ -26,6 +26,7 @@ import cn.iocoder.yudao.module.dsp.dal.mysql.product.ProductMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_HAS_COMPANY;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_HAS_DSP_SLOT;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_NAME_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.PRODUCT_NOT_EXISTS;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
@@ -56,6 +57,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Long createProduct(ProductSaveReqVO createReqVO) {
+        // 校验：同一公司下产品名称不能重复
+        validateProductNameUnique(createReqVO.getCompanyId(), createReqVO.getName(), null);
+
         // 插入
         ProductDO product = BeanUtils.toBean(createReqVO, ProductDO.class);
         productMapper.insert(product);
@@ -71,6 +75,8 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(ProductSaveReqVO updateReqVO) {
         // 校验存在
         validateProductExists(updateReqVO.getId());
+        // 校验：同一公司下产品名称不能重复（排除自身）
+        validateProductNameUnique(updateReqVO.getCompanyId(), updateReqVO.getName(), updateReqVO.getId());
         // 更新
         ProductDO updateObj = BeanUtils.toBean(updateReqVO, ProductDO.class);
         productMapper.updateById(updateObj);
@@ -110,6 +116,13 @@ public class ProductServiceImpl implements ProductService {
             throw exception(PRODUCT_NOT_EXISTS);
         }
         return product;
+    }
+
+    private void validateProductNameUnique(Long companyId, String name, Long excludeId) {
+        Long count = productMapper.selectCountByCompanyIdAndName(companyId, name, excludeId);
+        if (count != null && count > 0) {
+            throw exception(PRODUCT_NAME_EXISTS);
+        }
     }
 
     private void validateProductCanDelete(ProductDO product) {

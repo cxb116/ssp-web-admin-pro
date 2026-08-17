@@ -14,6 +14,7 @@
             p.id,
             p.name,
             p.company_id as companyId,
+            p.os_type as osType,
             c.name as companyName,
             p.creator,
             p.create_time,
@@ -23,14 +24,16 @@
             p.tenant_id
         FROM dsp_product as p
             LEFT JOIN dsp_company as c
-                ON c.id = p.company_id AND c.deleted = 0
+                ON c.id = p.company_id
         <where>
-            p.deleted = 0
             <if test="reqVO.name != null and reqVO.name != ''">
                 AND p.name LIKE CONCAT('%', #{reqVO.name}, '%')
             </if>
             <if test="reqVO.companyId != null">
                 AND p.company_id = #{reqVO.companyId}
+            </if>
+            <if test="reqVO.osType != null">
+                AND p.os_type = #{reqVO.osType}
             </if>
             <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
                 AND p.create_time BETWEEN #{reqVO.createTime[0]} AND #{reqVO.createTime[1]}
@@ -47,19 +50,32 @@
         SELECT COUNT(*)
         FROM dsp_product as p
             LEFT JOIN dsp_company as c
-                ON c.id = p.company_id AND c.deleted = 0
+                ON c.id = p.company_id
         <where>
-            p.deleted = 0
+
             <if test="reqVO.name != null and reqVO.name != ''">
                 AND p.name LIKE CONCAT('%', #{reqVO.name}, '%')
             </if>
             <if test="reqVO.companyId != null">
                 AND p.company_id = #{reqVO.companyId}
             </if>
+            <if test="reqVO.osType != null">
+                AND p.os_type = #{reqVO.osType}
+            </if>
             <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
                 AND p.create_time BETWEEN #{reqVO.createTime[0]} AND #{reqVO.createTime[1]}
             </if>
         </where>
+    </select>
+
+    <select id="selectCountByCompanyIdAndName" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM dsp_product
+        WHERE company_id = #{companyId}
+          AND name = #{name}
+        <if test="excludeId != null">
+          AND id != #{excludeId}
+        </if>
     </select>
 
 </mapper>

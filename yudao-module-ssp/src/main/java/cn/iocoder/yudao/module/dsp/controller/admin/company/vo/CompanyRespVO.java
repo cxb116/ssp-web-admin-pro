@@ -15,15 +15,15 @@ import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 public class CompanyRespVO {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32229")
-    @ExcelProperty("ID")
+    @ExcelProperty("预算公司ID")
     private Long id;
 
     @Schema(description = "公司名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
-    @ExcelProperty("公司名称")
+    @ExcelProperty("预算公司名称")
     private String name;
 
     @Schema(description = "预算映射值", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("预算映射值")
+    @ExcelProperty("匹配值")
     private Long dspCode;
 
     @Schema(description = "请求地址", requiredMode = Schema.RequiredMode.REQUIRED, example = "https://www.iocoder.cn")

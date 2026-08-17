@@ -27,7 +27,6 @@
                  LEFT JOIN ssp_media m
                            ON a.media_id = m.id
         WHERE a.id = #{id}
-          AND a.deleted = 0
     </select>
 
     <!--
@@ -54,7 +53,6 @@
         LEFT JOIN ssp_media m
         ON a.media_id = m.id
         <where>
-            a.deleted = 0
             <if test="reqVO.mediaId != null">
                 AND  a.media_id = #{reqVO.mediaId}
             </if>
@@ -85,7 +83,6 @@
         SELECT COUNT(*)
         FROM ssp_app a
         <where>
-            a.deleted = 0
             <if test="reqVO.mediaId != null">
                 AND  a.media_id = #{reqVO.mediaId}
             </if>
@@ -131,7 +128,6 @@
                  LEFT JOIN ssp_media m
                            ON a.media_id = m.id
         WHERE a.media_id = #{id}
-          AND a.deleted = 0
     </select>
 
 

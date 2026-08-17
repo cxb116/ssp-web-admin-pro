@@ -110,11 +110,17 @@ public class DspSlotDayDO extends BaseDO {
     /**
      * 时间(yyyyMMdd / yyyyMMddHH)
      */
-    private Integer date;
+    private Long date;
     /**
      * 创建时间戳
      */
     private Integer createdAt;
+
+    /**
+     * DSP预算名称（非表字段，关联查询获取）
+     */
+    @TableField(exist = false)
+    private String dspName;
 
     /**
      * 公司名称（非表字段，关联查询获取）
@@ -127,5 +133,74 @@ public class DspSlotDayDO extends BaseDO {
      */
     @TableField(exist = false)
     private String productName;
+
+    /**
+     * 媒体广告位名称（非表字段，关联 ssp_slot_info.name_alise 获取）
+     */
+    @TableField(exist = false)
+    private String sspName;
+
+    /**
+     * 应用名称（非表字段，关联 ssp_app.name 获取）
+     */
+    @TableField(exist = false)
+    private String appName;
+
+    /**
+     * 操作系统 1=Android 2=iOS（非表字段，关联 ssp_app.os_type 获取）
+     */
+    @TableField(exist = false)
+    private Integer osType;
+
+    /**
+     * 媒体名称（非表字段，关联 ssp_media.media_company_short 获取）
+     */
+    @TableField(exist = false)
+    private String mediaName;
+
+    /**
+     * 填充率
+     */
+    @TableField(exist = false)
+    private double fillRate;
+
+    /**
+     * 展现率
+     */
+    @TableField(exist = false)
+    private double displayRate;
+
+    /**
+     * 点击率
+     */
+    @TableField(exist = false)
+    private double clickRate;
+
+
+    /**
+     * ecpm   ecpm（预算千次展示收益）=收益/请求*1000
+     */
+    @TableField(exist = false)
+    private double ecpm;
+
+    /**
+     * media_ecpm 媒体ecpm（媒体千次展示收益）=成本/请求*1000
+     */
+    @TableField(exist = false)
+    private double mediaEcpm;
+
+    /**
+     * ecprm  ecprm（预算百万请求收益）=收益/请求*1000000
+     */
+    @TableField(exist = false)
+    private double ecprm;
+
+    /**
+     * mediaEcprm 媒体ecprm（媒体百万请求收益）=成本/请求*1000000
+     */
+    @TableField(exist = false)
+    private double mediaEcprm;
+
+
 
 }

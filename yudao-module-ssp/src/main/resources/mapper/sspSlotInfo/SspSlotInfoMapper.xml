@@ -42,7 +42,6 @@
             LEFT JOIN ssp_app as a
                 ON a.id =  s.app_id
         WHERE s.id = #{id}
-          AND s.deleted = 0
     </select>
 
     <!--
@@ -69,36 +68,53 @@
         s.deleted,
         s.tenant_id,
         m.media_company_short as mediaShortName,
+        m.media_company_short as mediaName,
         a.access_type as accessType,
         a.name as appName,
-        a.os_type as osType
+        a.os_type as osType,
+        s.name_alise as sspName
 
         FROM ssp_slot_info as s
             LEFT JOIN ssp_media as m
-                ON  m.id = s.media_id AND m.deleted = 0 AND m.enable = 1
+                ON  m.id = s.media_id AND m.enable = 1
             LEFT JOIN ssp_app as a
-                ON a.id = s.app_id AND a.deleted = 0 AND a.enable = 1
+                ON a.id = s.app_id AND a.enable = 1
 
         <where>
-            s.deleted = 0
-            <if test="reqVO.id != null">
-                AND s.id = #{reqVO.id}
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND s.id IN
+                <foreach collection="reqVO.id" item="rid" open="(" separator="," close=")">
+                    #{rid}
+                </foreach>
             </if>
             <if test="reqVO.mediaId != null">
                 AND s.media_id = #{reqVO.mediaId}
             </if>
-            <if test="reqVO.appId != null">
-                AND s.app_id = #{reqVO.appId}
+            <if test="reqVO.appId != null and reqVO.appId.size() > 0">
+                AND s.app_id IN
+                <foreach collection="reqVO.appId" item="aid" open="(" separator="," close=")">
+                    #{aid}
+                </foreach>
             </if>
-            <if test="reqVO.name != null and reqVO.name != ''">
-                AND s.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            <if test="reqVO.name != null and reqVO.name.size() > 0">
+                AND
+                <foreach collection="reqVO.name" item="n" open="(" separator=" OR " close=")">
+                    s.name LIKE CONCAT('%', #{n}, '%')
+                </foreach>
             </if>
-            <if test="reqVO.nameAlise != null and reqVO.nameAlise != ''">
-                AND s.name_alise LIKE CONCAT('%', #{reqVO.nameAlise}, '%')
+            <if test="reqVO.nameAlise != null and reqVO.nameAlise.size() > 0">
+                AND
+                <foreach collection="reqVO.nameAlise" item="na" open="(" separator=" OR " close=")">
+                    s.name_alise LIKE CONCAT('%', #{na}, '%')
+                </foreach>
             </if>
             <if test="reqVO.adScene != null">
                 AND s.ad_scene = #{reqVO.adScene}
             </if>
+            <if test="reqVO.osType != null">
+                AND a.os_type = #{reqVO.osType}
+            </if>
+
             <if test="reqVO.sspPayType != null">
                 AND s.ssp_pay_type = #{reqVO.sspPayType}
             </if>
@@ -123,25 +139,36 @@
         SELECT COUNT(*)
         FROM ssp_slot_info as s
             LEFT JOIN ssp_media as m
-                ON  m.id = s.media_id AND m.deleted = 0 AND m.enable = 1
+                ON  m.id = s.media_id AND m.enable = 1
             LEFT JOIN ssp_app as a
-                ON a.id = s.app_id AND a.deleted = 0 AND a.enable = 1
+                ON a.id = s.app_id AND a.enable = 1
         <where>
-            s.deleted = 0
-            <if test="reqVO.id != null">
-                AND s.id = #{reqVO.id}
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND s.id IN
+                <foreach collection="reqVO.id" item="rid" open="(" separator="," close=")">
+                    #{rid}
+                </foreach>
             </if>
             <if test="reqVO.mediaId != null">
                 AND s.media_id = #{reqVO.mediaId}
             </if>
-            <if test="reqVO.appId != null">
-                AND s.app_id = #{reqVO.appId}
+            <if test="reqVO.appId != null and reqVO.appId.size() > 0">
+                AND s.app_id IN
+                <foreach collection="reqVO.appId" item="aid" open="(" separator="," close=")">
+                    #{aid}
+                </foreach>
             </if>
-            <if test="reqVO.name != null and reqVO.name != ''">
-                AND s.name LIKE CONCAT('%', #{reqVO.name}, '%')
+            <if test="reqVO.name != null and reqVO.name.size() > 0">
+                AND
+                <foreach collection="reqVO.name" item="n" open="(" separator=" OR " close=")">
+                    s.name LIKE CONCAT('%', #{n}, '%')
+                </foreach>
             </if>
-            <if test="reqVO.nameAlise != null and reqVO.nameAlise != ''">
-                AND s.name_alise LIKE CONCAT('%', #{reqVO.nameAlise}, '%')
+            <if test="reqVO.nameAlise != null and reqVO.nameAlise.size() > 0">
+                AND
+                <foreach collection="reqVO.nameAlise" item="na" open="(" separator=" OR " close=")">
+                    s.name_alise LIKE CONCAT('%', #{na}, '%')
+                </foreach>
             </if>
             <if test="reqVO.adScene != null">
                 AND s.ad_scene = #{reqVO.adScene}

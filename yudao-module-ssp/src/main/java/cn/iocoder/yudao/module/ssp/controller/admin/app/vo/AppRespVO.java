@@ -15,12 +15,16 @@ import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 public class AppRespVO {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "17508")
-    @ExcelProperty("ID")
+    @ExcelProperty("媒体应用ID")
     private Long id;
 
     @Schema(description = "媒体Id", requiredMode = Schema.RequiredMode.REQUIRED, example = "5471")
-    @ExcelProperty("媒体Id")
+//    @ExcelProperty("媒体Id")
     private Long mediaId;
+
+    @Schema(description = "媒体简称")
+    @ExcelProperty("媒体简称")
+    private String mediaShort;
 
     @Schema(description = "应用名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     @ExcelProperty("应用名称")
@@ -41,7 +45,7 @@ public class AppRespVO {
     private String pkg;
 
     @Schema(description = "下载地址", example = "https://www.iocoder.cn")
-    @ExcelProperty("下载地址")
+//    @ExcelProperty("下载地址")
     private String downloadUrl;
 
     @Schema(description = "应用状态", requiredMode = Schema.RequiredMode.REQUIRED)

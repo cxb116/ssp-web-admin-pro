@@ -14,15 +14,27 @@
     -->
     <select id="selectPage" resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO">
         SELECT dsp.*, com.name as companyName, pro.name as productName FROM dsp_slot_info as dsp
-            LEFT JOIN dsp_company as com ON dsp.company_id = com.id AND com.deleted = 0
-            LEFT JOIN dsp_product as pro on dsp.product_id = pro.id AND pro.deleted = 0
+            LEFT JOIN dsp_company as com ON dsp.company_id = com.id
+            LEFT JOIN dsp_product as pro on dsp.product_id = pro.id
         <where>
-            dsp.deleted = 0 and com.deleted = 0 and pro.deleted = 0
-            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
-                AND dsp.dsp_slot_code = #{reqVO.dspSlotCode}
+
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND dsp.id IN
+                <foreach collection="reqVO.id" item="rid" open="(" separator="," close=")">
+                    #{rid}
+                </foreach>
             </if>
-            <if test="reqVO.productId != null">
-                AND dsp.product_id = #{reqVO.productId}
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode.size() > 0">
+                AND dsp.dsp_slot_code IN
+                <foreach collection="reqVO.dspSlotCode" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="reqVO.productId != null and reqVO.productId.size() > 0">
+                AND dsp.product_id IN
+                <foreach collection="reqVO.productId" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
             </if>
             <if test="reqVO.companyId != null">
                 AND dsp.company_id = #{reqVO.companyId}
@@ -56,15 +68,27 @@
     <select id="selectPageCount" resultType="java.lang.Long">
         SELECT COUNT(*)
         FROM dsp_slot_info as dsp
-        LEFT JOIN dsp_company as com ON dsp.company_id = com.id AND com.deleted = 0
-        LEFT JOIN dsp_product as pro on dsp.product_id = pro.id AND pro.deleted = 0
+        LEFT JOIN dsp_company as com ON dsp.company_id = com.id
+        LEFT JOIN dsp_product as pro on dsp.product_id = pro.id
         <where>
-            dsp.deleted = 0
-            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
-                AND dsp.dsp_slot_code = #{reqVO.dspSlotCode}
+
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND dsp.id IN
+                <foreach collection="reqVO.id" item="rid" open="(" separator="," close=")">
+                    #{rid}
+                </foreach>
             </if>
-            <if test="reqVO.productId != null">
-                AND dsp.product_id = #{reqVO.productId}
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode.size() > 0">
+                AND dsp.dsp_slot_code IN
+                <foreach collection="reqVO.dspSlotCode" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="reqVO.productId != null and reqVO.productId.size() > 0">
+                AND dsp.product_id IN
+                <foreach collection="reqVO.productId" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
             </if>
             <if test="reqVO.companyId != null">
                 AND dsp.company_id = #{reqVO.companyId}

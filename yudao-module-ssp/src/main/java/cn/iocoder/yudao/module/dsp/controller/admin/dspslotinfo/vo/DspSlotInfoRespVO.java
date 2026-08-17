@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.dsp.controller.admin.dspslotinfo.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
@@ -15,24 +16,34 @@ import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 public class DspSlotInfoRespVO {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32243")
-    @ExcelProperty("ID")
+    @ExcelProperty("预算位ID")
     private Long id;
 
-    @Schema(description = "预算方广告位", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("预算方广告位")
+    @Schema(description = "广告位名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "赵六")
+    @ExcelProperty("预算名称")
+    private String name;
+
+    @Schema(description = "预算广告位", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("预算广告位ID")
     private String dspSlotCode;
 
     @Schema(description = "产品ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "31959")
-    @ExcelProperty("产品ID")
+//    @ExcelProperty("产品ID")
     private Long productId;
 
     @Schema(description = "公司ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "16821")
-    @ExcelProperty("公司ID")
+//    @ExcelProperty("公司ID")
     private Long companyId;
 
-    @Schema(description = "广告位名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "赵六")
-    @ExcelProperty("广告位名称")
-    private String name;
+
+
+    @Schema(description = "产品名称")
+    @ExcelProperty("产品名称")
+    private String productName;
+
+    @Schema(description = "公司名称")
+    @ExcelProperty("公司名称")
+    private String companyName;
 
     @Schema(description = "操作系统", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @ExcelProperty(value = "操作系统", converter = DictConvert.class)
@@ -62,7 +73,7 @@ public class DspSlotInfoRespVO {
     private String dspAppId;
 
     @Schema(description = "预算方应用包名")
-    @ExcelProperty("预算方应用包名")
+    @ExcelProperty("应用包名")
     private String dspAppPkg;
 
     @Schema(description = "应用版本号")
@@ -81,11 +92,7 @@ public class DspSlotInfoRespVO {
     @ExcelProperty("应用商店地址")
     private String dspAppStoreLink;
 
-    @Schema(description = "公司名称")
-    private String companyName;
 
-    @Schema(description = "产品名称")
-    private String productName;
 
     @Schema(description = "创建者")
     @ExcelProperty("创建者")
@@ -102,5 +109,13 @@ public class DspSlotInfoRespVO {
     @Schema(description = "更新时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("更新时间")
     private LocalDateTime updateTime;
+
+    @Schema(description = "媒体绑定数量")
+    @TableField(exist = false)
+    private Integer ls;
+
+    @Schema(description = "媒体绑定数量")
+    @TableField(exist = false)
+    private Integer sspTotal;
 
 }

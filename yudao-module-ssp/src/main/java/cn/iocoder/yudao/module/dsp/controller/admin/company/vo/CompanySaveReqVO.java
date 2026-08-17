@@ -16,8 +16,7 @@ public class CompanySaveReqVO {
     @NotEmpty(message = "公司名称不能为空")
     private String name;
 
-    @Schema(description = "预算映射值", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "预算映射值不能为空")
+    @Schema(description = "匹配值")
     private Long dspCode;
 
     @Schema(description = "请求地址", requiredMode = Schema.RequiredMode.REQUIRED, example = "https://www.iocoder.cn")
