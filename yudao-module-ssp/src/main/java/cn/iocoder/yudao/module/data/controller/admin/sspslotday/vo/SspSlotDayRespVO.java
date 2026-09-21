@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.data.controller.admin.sspslotday.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import cn.idev.excel.annotation.*;
 
@@ -142,28 +145,38 @@ public class SspSlotDayRespVO {
 
     @Schema(description = "媒体ecpm（媒体千次展示收益）")
     @ExcelProperty("媒体ecpm")
-    private Long mediaEcpm;
+    private Double mediaEcpm;
 
 
     @Schema(description = "ecpm（预算千次展示收益）")
     @ExcelProperty("ecpm")
-    private Long ecpm;
+    private Double ecpm;
 
     @Schema(description = "媒体ecprm（媒体百万请求收益）")
     @ExcelProperty("媒体ecprm")
-    private Long mediaEcprm;
+    private Double mediaEcprm;
 
     @Schema(description = "ecprm（预算百万请求收益）")
     @ExcelProperty("ecprm")
-    private Long ecprm;
+    private Double ecprm;
 
 
-    @Schema(description = "成本(分)")
-    @ExcelProperty("成本(分)")
+    @Schema(description = "收益（元）")
+    @ExcelProperty("收益（元）")
+    private BigDecimal TotalIncome;
+
+    @Schema(description = "成本(元)")
+    @ExcelProperty("成本(元)")
     private Long spend;
 
-    @Schema(description = "收入(分)")
-    @ExcelProperty("收入(分)")
+    @Schema(description = "收入(元)")
+    @ExcelProperty("收入(元)")
     private Long income;
+
+
+    /**
+     * 是否解绑 1 没有解绑 2 解绑
+     */
+    private int isDeleted;
 
 }

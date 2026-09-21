@@ -204,8 +204,9 @@ public class LaunchServiceImpl implements LaunchService {
             etcdData.put("floor_price", launch.getFloorPrice() != null ? launch.getFloorPrice() : 0);
             etcdData.put("dsp_pay_ratio", launch.getDspPayRatio()); // 默认值，可根据需要调整
 
+            etcdData.put("launch_time", launch.getLaunchTime()); // 
             etcdData.put("launch_hour", launch.getLaunchHour()); // 默认值
-            etcdData.put("launch_time", launch.getLogTime() != null ? launch.getLogTime() : System.currentTimeMillis());
+
             etcdData.put("log_time", launch.getLogTime()); // 默认值
             etcdData.put("req", launch.getReq()); // 默认值
             etcdData.put("ims",launch.getIms()); // 默认值

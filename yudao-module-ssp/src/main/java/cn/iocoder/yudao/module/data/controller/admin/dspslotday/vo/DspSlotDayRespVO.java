@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.data.controller.admin.dspslotday.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import cn.idev.excel.annotation.*;
 
@@ -128,6 +131,9 @@ private Double fillRate;
 //    @ExcelProperty("公司名称")
     private String companyName;
 
+    @Schema(description = "预算公司ID")
+    private Long companyId;
+
     @Schema(description = "媒体广告位名称")
     private String sspName;
 
@@ -156,13 +162,24 @@ private Double fillRate;
     @ExcelProperty("ecprm")
     private Double ecprm;
 
+    @Schema(description = "收益（元）")
+    @ExcelProperty("收益（元）")
+    private BigDecimal TotalIncome;
 
-    @Schema(description = "成本(分)")
-    @ExcelProperty("成本(分)")
-    private Long spend;
 
-    @Schema(description = "收入(分)")
-    @ExcelProperty("收入(分)")
-    private Long income;
+    @Schema(description = "成本(元)")
+    @ExcelProperty("成本(元)")
+    private BigDecimal spend;
+
+    @Schema(description = "收入(元)")
+    @ExcelProperty("收入(元)")
+    private BigDecimal income;
+
+
+    /**
+     * 是否解绑 1 没有解绑 2 解绑
+     */
+    @Schema(description = "收入(元)")
+    private int isDeleted;
 
 }

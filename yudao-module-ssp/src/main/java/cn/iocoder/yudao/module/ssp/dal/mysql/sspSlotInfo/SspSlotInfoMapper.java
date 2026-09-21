@@ -31,4 +31,6 @@ public interface SspSlotInfoMapper extends BaseMapperX<SspSlotInfoDO> {
      */
     SspSlotInfoDO selectSlotInfoById(Long id);
 
+    SspSlotInfoDO selectSspSlotId(Long id);
+
 }

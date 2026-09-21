@@ -114,6 +114,17 @@
         </where>
     </select>
 
+    <!-- 按预算方广告位编码和公司 ID 校验广告位归属，导入前使用 -->
+    <select id="selectDspSlotCodeAndCompanyId"
+            resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO">
+        SELECT *
+        FROM dsp_slot_info
+        WHERE dsp_slot_code = #{dspSlotCode}
+          AND company_id = #{companyId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
 
 
 </mapper>

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.excel.core.util;
 
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.converters.longconverter.LongStringConverter;
+import cn.idev.excel.write.handler.WriteHandler;
 import cn.iocoder.yudao.framework.common.util.http.HttpUtils;
 import cn.iocoder.yudao.framework.excel.core.handler.ColumnWidthMatchStyleStrategy;
 import cn.iocoder.yudao.framework.excel.core.handler.SelectSheetWriteHandler;
@@ -18,6 +19,9 @@ import java.util.List;
  * @author 芋道源码
  */
 public class ExcelUtils {
+
+    private static final WriteHandler EMPTY_WRITE_HANDLER = new WriteHandler() {
+    };
 
     /**
      * 将列表以 Excel 响应给前端
@@ -49,6 +53,16 @@ public class ExcelUtils {
      */
     public static <T> void write(HttpServletResponse response, String filename, String sheetName,
                                  Class<T> head, List<T> data, boolean autoColumnWidth) throws IOException {
+        write(response, filename, sheetName, head, data, autoColumnWidth, null);
+    }
+
+    /**
+     * 将列表以 Excel 响应给前端，并支持自定义写入处理器。
+     */
+    public static <T> void write(HttpServletResponse response, String filename, String sheetName,
+                                 Class<T> head, List<T> data, boolean autoColumnWidth,
+                                 WriteHandler writeHandler) throws IOException {
+        WriteHandler actualWriteHandler = writeHandler != null ? writeHandler : EMPTY_WRITE_HANDLER;
         // 输出 Excel
         if (autoColumnWidth) {
             FastExcelFactory.write(response.getOutputStream(), head)
@@ -56,12 +70,14 @@ public class ExcelUtils {
                     .registerWriteHandler(new ColumnWidthMatchStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
                     .registerWriteHandler(new SelectSheetWriteHandler(head)) // 基于固定 sheet 实现下拉框
                     .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                    .registerWriteHandler(actualWriteHandler)
                     .sheet(sheetName).doWrite(data);
         } else {
             FastExcelFactory.write(response.getOutputStream(), head)
                     .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
                     .registerWriteHandler(new SelectSheetWriteHandler(head)) // 基于固定 sheet 实现下拉框
                     .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                    .registerWriteHandler(actualWriteHandler)
                     .sheet(sheetName).doWrite(data);
         }
         // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了

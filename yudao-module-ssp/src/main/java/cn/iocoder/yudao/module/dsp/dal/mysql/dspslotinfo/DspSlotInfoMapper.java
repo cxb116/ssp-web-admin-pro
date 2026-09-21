@@ -31,4 +31,7 @@ public interface DspSlotInfoMapper extends BaseMapperX<DspSlotInfoDO> {
      * @return
      */
     List<DspSlotInfoRespVO> getSlotInfoPageSsp();
+
+    DspSlotInfoDO selectDspSlotCodeAndCompanyId(@Param("dspSlotCode") String dspSlotCode,
+                                                @Param("companyId") Long companyId);
 }

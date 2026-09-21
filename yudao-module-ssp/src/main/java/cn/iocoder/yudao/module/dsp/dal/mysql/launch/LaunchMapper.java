@@ -75,4 +75,12 @@ public interface LaunchMapper extends BaseMapperX<LaunchDO> {
      * @return
      */
     List<LaunchDO> selectLaunchBySspSlotIdDspSlotId(@Param("sspSlotId") Long sspSlotId, @Param("dspSlotId") Long dspSlotId);
+
+    /**
+     * 查询绑定
+     * @param sspSlotid
+     * @param dspSlotId
+     * @return
+     */
+//    LaunchDO selectDspSlotIdAndSspSlotIdAndData(Long sspSlotid, Long dspSlotId);
 }

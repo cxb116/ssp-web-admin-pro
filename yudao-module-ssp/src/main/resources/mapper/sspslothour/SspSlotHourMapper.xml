@@ -90,6 +90,77 @@
     </select>
 
     <!--
+        小时报表折线图：按小时聚合（date 格式 yyyyMMddHH，MOD(date,100) 提取小时），
+        单天范围通过 date[0]=yyyyMMdd00 ~ date[1]=yyyyMMdd23 界定
+    -->
+    <select id="selectHourTrend" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO">
+        SELECT
+            MOD(h.date, 100) AS date,
+            SUM(h.req_count) AS req_pv,
+            SUM(h.ret_pv) AS ret_pv,
+            SUM(h.show_pv) AS show_pv,
+            SUM(h.click_pv) AS click_pv,
+            SUM(h.spend) AS spend,
+            SUM(h.income) AS income,
+            SUM(h.discount_click_pv) AS discount_click_pv,
+            SUM(h.discount_show_pv) AS discount_show_pv,
+            SUM(h.dplsucc_pv) AS dplsucc_pv,
+            SUM(h.complete_pv) AS complete_pv,
+            SUM(h.install_pv) AS install_pv,
+            SUM(h.activate_pv) AS activate_pv
+        FROM data_ssp_slot_hour AS h
+        LEFT JOIN ssp_slot_info AS ssp ON h.ssp_slot_id = ssp.id
+        LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+        <where>
+            <if test="reqVO.date != null and reqVO.date.length > 0">
+                <choose>
+                    <when test="reqVO.date.length == 1">
+                        AND h.date = #{reqVO.date[0]}
+                    </when>
+                    <otherwise>
+                        AND h.date BETWEEN #{reqVO.date[0]} AND #{reqVO.date[1]}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="reqVO.mediaId != null">
+                AND h.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.osType != null">
+                AND app.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.appId != null and reqVO.appId.length > 0">
+                AND h.app_id IN
+                <foreach collection="reqVO.appId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.sspName != null and reqVO.sspName.length > 0">
+                AND ssp.name_alise IN
+                <foreach collection="reqVO.sspName" item="name" open="(" separator="," close=")">
+                    #{name}
+                </foreach>
+            </if>
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">
+                AND h.ssp_slot_id IN
+                <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">
+                AND h.dsp_slot_id IN
+                <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND h.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+        </where>
+        GROUP BY MOD(h.date, 100)
+        ORDER BY MOD(h.date, 100) ASC
+    </select>
+
+    <!--
         根据 dspSlotId 和 date 查询 DSP 预算位对应的 SSP 小时子表数据
     -->
     <select id="getSspDspSlotHour" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslothour.SspSlotHourDO">

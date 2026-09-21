@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.data.dal.dataobject.sspslothour;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -90,11 +92,11 @@ public class SspSlotHourDO extends BaseDO {
     /**
      * 成本(分)
      */
-    private Long spend;
+    private BigDecimal spend;
     /**
      * 收入(分)
      */
-    private Long income;
+    private BigDecimal income;
     /**
      * 折后点击
      */
@@ -196,5 +198,9 @@ public class SspSlotHourDO extends BaseDO {
      */
     @TableField(exist = false)
     private double mediaEcprm;
+
+
+    @TableField(exist = false)
+    private int isDeleted;
 
 }

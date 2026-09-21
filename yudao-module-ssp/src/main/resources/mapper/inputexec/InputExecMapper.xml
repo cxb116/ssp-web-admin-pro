@@ -38,8 +38,8 @@
      FROM dsp_input_exec AS exec
      LEFT JOIN dsp_slot_info AS dsp ON dsp.company_id = exec.company_id
      LEFT JOIN data_dsp_slot_day AS ssp_slot ON ssp_slot.dsp_slot_id = dsp.id AND ssp_slot.date = DATE_FORMAT(#{inputTime}, '%Y%m%d')
-     LEFT JOIN ssp_slot_info AS ssp ON ssp.id = ssp_slot.ssp_slot_id
-     LEFT JOIN ssp_media AS media ON media.id = ssp.media_id
+     RIGHT JOIN ssp_slot_info AS ssp ON ssp.id = ssp_slot.ssp_slot_id
+     RIGHT JOIN ssp_media AS media ON media.id = ssp.media_id
      WHERE exec.input_time =  DATE_FORMAT(#{inputTime}, '%Y%m%d')
        AND exec.company_id = #{id}
        ORDER BY exec.id DESC
@@ -47,9 +47,20 @@
 
     <update id="updateInputExec" parameterType="cn.iocoder.yudao.module.data.dal.dataobject.inputexec.InputExecDO">
         UPDATE dsp_input_exec
-        SET update_time = #{updateTime}
+        SET update_time = #{updateTime},
+            tables = #{tables}
         WHERE id = #{id}
           AND input_time = #{inputTime}
     </update>
+
+    <!-- 根据导入记录 ID 查询记录，过滤已逻辑删除的数据 -->
+    <select id="selectInputExecId"
+            resultType="cn.iocoder.yudao.module.data.dal.dataobject.inputexec.InputExecDO">
+        SELECT *
+        FROM dsp_input_exec
+        WHERE id = #{id}
+          AND deleted = 0
+        LIMIT 1
+    </select>
 
 </mapper>

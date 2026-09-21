@@ -17,6 +17,49 @@
 <!--    <where>-->
 <!--    day.deleted = 0 AND ssp.deleted = 0 AND app.deleted = 0 AND media.deleted = 0-->
 
+
+    <select id="getDspSlotDaySum" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT
+            SUM(day1.show_pv) AS show_pv,
+            SUM(day1.click_pv) AS click_pv,
+            SUM(day1.req_pv) AS req_pv,
+            SUM(day1.discard) AS discard,
+            SUM(day1.ret_pv) AS ret_pv,
+            SUM(day1.spend) AS spend,
+            SUM(day1.income) AS income,
+            SUM(day1.discount_click_pv) AS discount_click_pv,
+            SUM(day1.discount_show_pv) AS discount_show_pv,
+            SUM(day1.dplsucc_pv) AS dplsucc_pv,
+            SUM(day1.complete_pv) AS complete_pv,
+            SUM(day1.install_pv) AS install_pv,
+            SUM(day1.activate_pv) AS activate_pv
+        FROM data_ssp_slot_day day1
+        WHERE day1.date BETWEEN #{date[0]} AND #{date[1]}
+    </select>
+
+    <select id="getSspSlotDaySumByCondition" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT SUM(day.show_pv) show_pv, SUM(day.click_pv) click_pv, SUM(day.req_count) req_pv,
+               SUM(day.discard) discard, SUM(day.ret_pv) ret_pv, SUM(day.spend) spend, SUM(day.income) income,
+               SUM(day.discount_click_pv) discount_click_pv, SUM(day.discount_show_pv) discount_show_pv,
+               SUM(day.dplsucc_pv) dplsucc_pv, SUM(day.complete_pv) complete_pv,
+               SUM(day.install_pv) install_pv, SUM(day.activate_pv) activate_pv
+        FROM data_ssp_slot_day day
+        LEFT JOIN ssp_slot_info ssp ON day.ssp_slot_id = ssp.id
+        LEFT JOIN ssp_app app ON app.id = ssp.app_id
+        <where>
+            <if test="reqVO.date != null and reqVO.date.length >= 2">day.date BETWEEN #{reqVO.date[0]} AND #{reqVO.date[1]}</if>
+            <if test="reqVO.mediaId != null">AND day.media_id = #{reqVO.mediaId}</if>
+            <if test="reqVO.appId != null and reqVO.appId.length > 0">AND day.app_id IN <foreach collection="reqVO.appId" item="id" open="(" separator="," close=")">#{id}</foreach></if>
+            <if test="reqVO.sspName != null and reqVO.sspName.length > 0">AND ssp.name_alise IN <foreach collection="reqVO.sspName" item="name" open="(" separator="," close=")">#{name}</foreach></if>
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">AND day.ssp_slot_id IN <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">#{id}</foreach></if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">AND day.dsp_slot_id IN <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">#{id}</foreach></if>
+            <if test="reqVO.osType != null">AND app.os_type = #{reqVO.osType}</if>
+            <if test="reqVO.adScene != null">AND ssp.ad_scene = #{reqVO.adScene}</if>
+        </where>
+    </select>
+
+
+
     <select id="selectSspSlotDayPage" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
         SELECT
               day.ssp_slot_id AS ssp_slot_id,
@@ -93,6 +136,72 @@
     </select>
 
     <!--
+        日报表折线图：按天聚合，对时间范围内的所有记录求和各原始指标
+    -->
+    <select id="selectDayTrend" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT
+            day.date AS date,
+            SUM(day.req_count) AS req_pv,
+            SUM(day.ret_pv) AS ret_pv,
+            SUM(day.show_pv) AS show_pv,
+            SUM(day.click_pv) AS click_pv,
+            SUM(day.spend) AS spend,
+            SUM(day.income) AS income,
+            SUM(day.discount_click_pv) AS discount_click_pv,
+            SUM(day.discount_show_pv) AS discount_show_pv,
+            SUM(day.dplsucc_pv) AS dplsucc_pv,
+            SUM(day.complete_pv) AS complete_pv,
+            SUM(day.install_pv) AS install_pv,
+            SUM(day.activate_pv) AS activate_pv
+        FROM data_ssp_slot_day AS day
+        LEFT JOIN ssp_slot_info AS ssp ON day.ssp_slot_id = ssp.id
+        LEFT JOIN ssp_app AS app ON app.id = ssp.app_id
+        <where>
+            <if test="reqVO.mediaId != null">
+                AND day.media_id = #{reqVO.mediaId}
+            </if>
+            <if test="reqVO.appId != null and reqVO.appId.length > 0">
+                AND day.app_id IN
+                <foreach collection="reqVO.appId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.sspName != null and reqVO.sspName.length > 0">
+                AND ssp.name_alise IN
+                <foreach collection="reqVO.sspName" item="name" open="(" separator="," close=")">
+                    #{name}
+                </foreach>
+            </if>
+            <if test="reqVO.sspSlotId != null and reqVO.sspSlotId.length > 0">
+                AND day.ssp_slot_id IN
+                <foreach collection="reqVO.sspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotId != null and reqVO.dspSlotId.length > 0">
+                AND day.dsp_slot_id IN
+                <foreach collection="reqVO.dspSlotId" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="reqVO.dspSlotCode != null and reqVO.dspSlotCode != ''">
+                AND day.dsp_slot_code = #{reqVO.dspSlotCode}
+            </if>
+            <if test="reqVO.osType != null">
+                AND app.os_type = #{reqVO.osType}
+            </if>
+            <if test="reqVO.adScene != null">
+                AND ssp.ad_scene = #{reqVO.adScene}
+            </if>
+            <if test="reqVO.date != null and reqVO.date.length >= 2">
+                AND day.date BETWEEN REPLACE(#{reqVO.date[0]}, '-', '') AND REPLACE(#{reqVO.date[1]}, '-', '')
+            </if>
+        </where>
+        GROUP BY day.date
+        ORDER BY day.date ASC
+    </select>
+
+    <!--
         根据 ID 查询
     -->
     <select id="getSspSlotDay" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
@@ -139,5 +248,40 @@
           AND dsp_slot_code = #{dspSlotCode}
           AND date = #{date}
     </update>
+
+    <update id="updateSspSlotDaySpendAndIncome"
+            parameterType="cn.iocoder.yudao.module.data.controller.admin.inputexec.vo.InputIncomeReqVO">
+        UPDATE data_ssp_slot_day
+        SET spend = #{spend},
+            income = #{income}
+        WHERE dsp_slot_code = #{dspSlotCode}
+          AND dsp_slot_id = #{dspSlotId}
+          AND ssp_slot_id = #{sspSlotId}
+          AND date = #{date}
+          AND deleted = 0
+    </update>
+
+    <select id="selectMediaCompanySum" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT media.id AS mediaId, media.media_company_name AS mediaName,
+               SUM(day.show_pv) AS showPv, SUM(day.click_pv) AS clickPv,
+               SUM(day.req_pv) AS reqPv, SUM(day.req_count) AS reqCount,
+               SUM(day.discard) AS discard, SUM(day.ret_pv) AS retPv,
+               SUM(day.spend) AS spend, SUM(day.income) AS income,
+               SUM(day.discount_click_pv) AS discountClickPv, SUM(day.discount_show_pv) AS discountShowPv,
+               SUM(day.dplsucc_pv) AS dplsuccPv, SUM(day.complete_pv) AS completePv,
+               SUM(day.install_pv) AS installPv, SUM(day.activate_pv) AS activatePv,
+               #{date} AS date
+        FROM data_ssp_slot_day day
+        INNER JOIN ssp_slot_info slot ON slot.id = day.ssp_slot_id AND slot.deleted = 0
+        INNER JOIN ssp_media media ON media.id = slot.media_id AND media.deleted = 0
+        WHERE day.date = #{date} AND day.deleted = 0
+        GROUP BY media.id, media.media_company_name
+        ORDER BY media.id
+    </select>
+
+
+    <select id="selectDspSlotIdAndSspSlotIdAndData" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+       select * from data_ssp_slot_day where ssp_slot_id = #{sspSlotId} AND dsp_slot_id =#{dspSlotId} AND date = #{date}
+    </select>
 
 </mapper>

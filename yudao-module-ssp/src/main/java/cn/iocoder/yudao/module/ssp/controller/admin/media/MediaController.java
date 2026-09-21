@@ -13,6 +13,15 @@ import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
+import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -37,6 +46,12 @@ public class MediaController {
 
     @Resource
     private MediaService mediaService;
+
+    @Value("${ssp.sso-secret:media-admin-secret-key-for-jwt-token-generation-2024-secure-key-hs512-must-be-at-least-64-bytes-long}")
+    private String ssoSecret;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     @PostMapping("/create")
     @Operation(summary = "创建媒体")
@@ -85,7 +100,37 @@ public class MediaController {
     @PreAuthorize("@ss.hasPermission('ssp:media:query')")
     public CommonResult<PageResult<MediaRespVO>> getMediaPage(@Valid MediaPageReqVO pageReqVO) {
         PageResult<MediaDO> pageResult = mediaService.getMediaPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, MediaRespVO.class));
+        PageResult<MediaRespVO> result = BeanUtils.toBean(pageResult, MediaRespVO.class);
+        result.getList().forEach(item -> item.setSsoToken(createSsoToken(item.getAccount(), item.getPassword())));
+        return success(result);
+    }
+
+    private String createSsoToken(String account,String pwd) {
+        try {
+            // AES-GCM 提供机密性和完整性；密钥统一从配置项派生为 256 bit。
+            byte[] keyBytes = MessageDigest.getInstance("SHA-256")
+                    .digest(ssoSecret.getBytes(StandardCharsets.UTF_8));
+            byte[] iv = new byte[12];
+            new SecureRandom().nextBytes(iv);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, "AES"),
+                    new GCMParameterSpec(128, iv));
+            Map<String, String> payloadData = new LinkedHashMap<>();
+            payloadData.put("account", account == null ? "" : account);
+            payloadData.put("password", pwd == null ? "" : pwd);
+            String payload = objectMapper.writeValueAsString(payloadData);
+            byte[] encrypted = cipher.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] token = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, token, 0, iv.length);
+            System.arraycopy(encrypted, 0, token, iv.length, encrypted.length);
+            return base64Url(token);
+        } catch (Exception e) {
+            throw new IllegalStateException("创建 SSO Token 失败", e);
+        }
+    }
+
+    private String base64Url(byte[] value) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
     }
 
     @GetMapping("/export-excel")

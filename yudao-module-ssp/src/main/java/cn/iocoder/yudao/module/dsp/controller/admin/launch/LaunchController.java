@@ -40,14 +40,14 @@ public class LaunchController {
 
     @PostMapping("/create")
     @Operation(summary = "创建媒体预算绑定")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:create')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:create')")
     public CommonResult<Long> createLaunch(@Valid @RequestBody LaunchSaveReqVO createReqVO) {
         return success(launchService.createLaunch(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新媒体预算绑定")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:update')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:update')")
     public CommonResult<Boolean> updateLaunch(@Valid @RequestBody LaunchSaveReqVO updateReqVO) {
         launchService.updateLaunch(updateReqVO);
         return success(true);
@@ -56,7 +56,7 @@ public class LaunchController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除媒体预算绑定")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('dsp:launch:delete')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:delete')")
     public CommonResult<Boolean> deleteLaunch(@RequestParam("id") Long id) {
         launchService.deleteLaunch(id);
         return success(true);
@@ -65,7 +65,7 @@ public class LaunchController {
     @DeleteMapping("/delete-list")
     @Parameter(name = "ids", description = "编号", required = true)
     @Operation(summary = "批量删除媒体预算绑定")
-                @PreAuthorize("@ss.hasPermission('dsp:launch:delete')")
+//                @PreAuthorize("@ss.hasPermission('dsp:launch:delete')")
     public CommonResult<Boolean> deleteLaunchList(@RequestParam("ids") List<Long> ids) {
         launchService.deleteLaunchListByIds(ids);
         return success(true);
@@ -74,7 +74,7 @@ public class LaunchController {
     @GetMapping("/get")
     @Operation(summary = "获得媒体预算绑定")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
     public CommonResult<LaunchRespVO> getLaunch(@RequestParam("id") Long id) {
         LaunchDO launch = launchService.getLaunch(id);
         return success(BeanUtils.toBean(launch, LaunchRespVO.class));
@@ -84,7 +84,7 @@ public class LaunchController {
     @GetMapping("/sspslotid/{id}")
     @Operation(summary = "获得媒体绑定的预算数据")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
     public CommonResult<List<LaunchRespVO>> getLaunchSspSlotIdQuery(@PathVariable("id") Long id) {
         List<LaunchDO> launchList = launchService.getLaunchSspSlotIdQuery(id);
         return success(BeanUtils.toBean(launchList, LaunchRespVO.class));
@@ -95,7 +95,7 @@ public class LaunchController {
     @GetMapping("/dspslotid/{id}")
     @Operation(summary = "获得预算绑定的媒体数据")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
     public CommonResult<List<LaunchRespVO>> getLaunchDspSlotIdQuery(@PathVariable("id") Long id) {
         List<LaunchDO> launchList = launchService.getLaunchDspSlotIdQuery(id);
         return success(BeanUtils.toBean(launchList, LaunchRespVO.class));
@@ -106,7 +106,7 @@ public class LaunchController {
     @GetMapping("/sspslotid_group/{id}")
     @Operation(summary = "获得DspLaunch 中的SspSlotId 的数据绑定集合")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
     public CommonResult<List<LaunchRespVO>> getLaunchSspSlotList(@PathVariable("id") Long id) {
         List<LaunchDO> launchList = launchService.getLaunchSspSlotList(id);
         return success(BeanUtils.toBean(launchList, LaunchRespVO.class));
@@ -116,7 +116,7 @@ public class LaunchController {
 
     @GetMapping("/page")
     @Operation(summary = "获得媒体预算绑定分页")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:query')")
     public CommonResult<PageResult<LaunchRespVO>> getLaunchPage(@Valid LaunchPageReqVO pageReqVO) {
         PageResult<LaunchDO> pageResult = launchService.getLaunchPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, LaunchRespVO.class));
@@ -124,7 +124,7 @@ public class LaunchController {
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出媒体预算绑定 Excel")
-    @PreAuthorize("@ss.hasPermission('dsp:launch:export')")
+//    @PreAuthorize("@ss.hasPermission('dsp:launch:export')")
     @ApiAccessLog(operateType = EXPORT)
     public void exportLaunchExcel(@Valid LaunchPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {

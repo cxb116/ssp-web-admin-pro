@@ -22,6 +22,17 @@ public class MediaRespVO {
     @ExcelProperty("媒体账号")
     private String account;
 
+    @Schema(description = "子后台短效登录票据")
+    private String ssoToken;
+
+
+    /**
+     * 密码
+     */
+    @Schema(description = "账号密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "7880")
+//    @ExcelProperty("媒体密码")
+    private String password;
+
     @Schema(description = "公司简称", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("媒体简称")
     private String mediaCompanyShort;

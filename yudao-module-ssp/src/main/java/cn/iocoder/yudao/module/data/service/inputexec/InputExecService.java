@@ -8,66 +8,68 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
- * DSP数据导入 Service 接口
+ * DSP鏁版嵁瀵煎叆 Service 鎺ュ彛
  *
- * @author 芋道源码
+ * @author 鑺嬮亾婧愮爜
  */
 public interface InputExecService {
 
     /**
-     * 创建DSP数据导入
+     * 鍒涘缓DSP鏁版嵁瀵煎叆
      *
-     * @param createReqVO 创建信息
-     * @return 编号
+     * @param createReqVO 鍒涘缓淇℃伅
+     * @return 缂栧彿
      */
     Long createInputExec(@Valid InputExecSaveReqVO createReqVO);
 
     /**
-     * 更新DSP数据导入
+     * 鏇存柊DSP鏁版嵁瀵煎叆
      *
-     * @param updateReqVO 更新信息
+     * @param updateReqVO 鏇存柊淇℃伅
      */
     void updateInputExec(@Valid InputExecSaveReqVO updateReqVO);
 
     /**
-     * 删除DSP数据导入
+     * 鍒犻櫎DSP鏁版嵁瀵煎叆
      *
-     * @param id 编号
+     * @param id 缂栧彿
      */
     void deleteInputExec(Long id);
 
     /**
-    * 批量删除DSP数据导入
+    * 鎵归噺鍒犻櫎DSP鏁版嵁瀵煎叆
     *
-    * @param ids 编号
+    * @param ids 缂栧彿
     */
     void deleteInputExecListByIds(List<Long> ids);
 
     /**
-     * 获得DSP数据导入
+     * 鑾峰緱DSP鏁版嵁瀵煎叆
      *
-     * @param id 编号
-     * @return DSP数据导入
+     * @param id 缂栧彿
+     * @return DSP鏁版嵁瀵煎叆
      */
     InputExecDO getInputExec(Long id);
 
     /**
-     * 获得DSP数据导入分页
+     * 鑾峰緱DSP鏁版嵁瀵煎叆鍒嗛〉
      *
-     * @param pageReqVO 分页查询
-     * @return DSP数据导入分页
+     * @param pageReqVO 鍒嗛〉鏌ヨ
+     * @return DSP鏁版嵁瀵煎叆鍒嗛〉
      */
     PageResult<InputExecDO> getInputExecPage(InputExecPageReqVO pageReqVO);
 
     List<InputExecDO> getDownExcelInput(Long id,String inputTime);
 
     /**
-     * 导入DSP数据导入列表
+     * 瀵煎叆DSP鏁版嵁瀵煎叆鍒楄〃
      *
-     * @param list 导入数据列表
-     * @param companyId 公司ID
-     * @return 导入结果
+     * @param list 瀵煎叆鏁版嵁鍒楄〃
+     * @param companyId 鍏徃ID
+     * @return 瀵煎叆缁撴灉
      */
-    String importExecList(List<InputExecTemplateVO> list, Long companyId);
-
+    List<DspSlotDayInputRespVo> importExecList(List<InputExecTemplateVO> list, Long companyId);
+    // 淇濆瓨鏀跺叆鏁版嵁
+    String updateInputIncomeData(@Valid List<InputIncomeReqVO> inputIncomeReqVOList);
 }
+

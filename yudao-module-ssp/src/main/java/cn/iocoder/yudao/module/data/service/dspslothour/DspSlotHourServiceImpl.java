@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.data.service.dspslothour;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO;
 import cn.iocoder.yudao.module.data.dal.mysql.sspslotday.SspSlotDayMapper;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
 import cn.iocoder.yudao.module.dsp.dal.mysql.dspslotinfo.DspSlotInfoMapper;
 import cn.iocoder.yudao.module.dsp.dal.mysql.launch.LaunchMapper;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
@@ -108,8 +110,6 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
         Page<DspSlotHourDO> resultPage = dspSlotHourMapper.selectDspSlotHourPage(page, pageReqVO, sortField);
 
         resultPage.getRecords().forEach(dspSlotHourDO -> {
-            Long dspSlotId = dspSlotHourDO.getDspSlotId();
-            Long sspSlotId = dspSlotHourDO.getSspSlotId();
 
             Long reqCount = dspSlotHourDO.getReqPv();
             if (reqCount == null || reqCount == 0) {
@@ -141,71 +141,26 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
                 dspSlotHourDO.setClickRate(0.0);
             }
 
+            if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal Profit = dspSlotHourDO.getSpend().add(dspSlotHourDO.getIncome());
 
-            // 查找预算DspSlotInfo 对象
-            DspSlotInfoDO dspSlotInfoDO = dspSlotInfoMapper.selectById(dspSlotId);
-            if (dspSlotInfoDO == null) {
-                return;
+
+                // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
+                dspSlotHourDO.setEcpm(calculateMetric(Profit, dspSlotHourDO.getShowUv(), 1000));
+                // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
+                    dspSlotHourDO.setEcprm(calculateMetric(Profit, dspSlotHourDO.getReqPv(), 1000000));
+            } else {
+                dspSlotHourDO.setEcpm(0.0);
+                dspSlotHourDO.setEcprm(0.0);
             }
-            // 上游预算结算方式，1=分成，2=RTB 3=固价
-            Integer dspPayType = dspSlotInfoDO.getDspPayType();
-            if (dspPayType == null) {
-                return;
-            }
-
-            SspSlotInfoDO sspSlotInfoDO = sspSlotInfoMapper.selectById(sspSlotId);
-            if (sspSlotInfoDO == null) {
-                return;
-            }
-            // 下游媒体结算方式，1=分成，2=RTB, 3=固价
-            Integer sspPayType = sspSlotInfoDO.getSspPayType();
-            if (sspPayType == null) {
-                return;
-            }
-
-            // 预算RTB,媒体RTB
-            if (dspPayType == 2 && sspPayType == 2) {
-                Long income = dspSlotHourDO.getIncome();
-                if (income != null && income != 0) {
-                    dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                    dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setEcpm(0L);
-                    dspSlotHourDO.setEcprm(0L);
-                }
-
-                Long spend = dspSlotHourDO.getSpend();
-                if (spend != null && spend != 0) {
-                    dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                    dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setMediaEcpm(0L);
-                    dspSlotHourDO.setMediaEcprm(0L);
-                }
-            } else if (dspPayType == 2 && sspPayType == 1) { // 预算RTB,媒体分成
-                Integer sspDealRatio = sspSlotInfoDO.getSspDealRatio(); // 媒体分成系数
-                if (sspDealRatio == null) {
-                    sspDealRatio = 0;
-                }
-                Long spend = dspSlotHourDO.getSpend();
-                if (spend != null && spend != 0 && sspDealRatio != 0) {
-                    // 预算收入 = 媒体成本 * 分成系数 / 100
-                    Long income = spend * sspDealRatio / 100;
-                    // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                    dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                    // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
-                    dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-
-                    // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                    dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                    // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
-                    dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setEcpm(0L);
-                    dspSlotHourDO.setEcprm(0L);
-                    dspSlotHourDO.setMediaEcpm(0L);
-                    dspSlotHourDO.setMediaEcprm(0L);
-                }
+            if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+                // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
+                dspSlotHourDO.setMediaEcpm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getShowUv(), 1000));
+                // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
+                dspSlotHourDO.setMediaEcprm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getReqPv(), 1000000));
+            } else {
+                dspSlotHourDO.setMediaEcpm(0.0);
+                dspSlotHourDO.setMediaEcprm(0.0);
             }
         });
 
@@ -231,8 +186,6 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
      * 规则与 getDspSlotHourPage 一致
      */
     private void enrichDerivedMetrics(DspSlotHourDO dspSlotHourDO) {
-        Long dspSlotId = dspSlotHourDO.getDspSlotId();
-        Long sspSlotId = dspSlotHourDO.getSspSlotId();
 
         Long reqCount = dspSlotHourDO.getReqPv();
         if (reqCount == null || reqCount == 0) {
@@ -265,83 +218,46 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
             dspSlotHourDO.setClickRate(0.0);
         }
 
-        // 查找预算DspSlotInfo 对象
-        DspSlotInfoDO dspSlotInfoDO = dspSlotInfoMapper.selectById(dspSlotId);
-        if (dspSlotInfoDO == null) {
-            return;
-        }
-        // 上游预算结算方式，1=分成，2=RTB 3=固价
-        Integer dspPayType = dspSlotInfoDO.getDspPayType();
-        if (dspPayType == null) {
-            return;
-        }
 
-        SspSlotInfoDO sspSlotInfoDO = sspSlotInfoMapper.selectById(sspSlotId);
-        if (sspSlotInfoDO == null) {
-            return;
-        }
-        // 下游媒体结算方式，1=分成，2=RTB, 3=固价
-        Integer sspPayType = sspSlotInfoDO.getSspPayType();
-        if (sspPayType == null) {
-            return;
-        }
-
-
-        // ecpm（预算千次展示收益）=收益/请求*1000
+        // ecpm（预算千次展示收益）=收益/展示*1000
         // 媒体ecpm（媒体千次展示收益）=成本/请求*1000
         // ecprm（预算百万请求收益）=收益/请求*1000000
         // 媒体ecprm（媒体百万请求收益）=成本/请求*1000000
 
-        // 预算RTB,媒体RTB
-        if (dspPayType == 2 && sspPayType == 2) {
-            Long income = dspSlotHourDO.getIncome();
-            if (income != null && income != 0) {
-                dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-            } else {
-                dspSlotHourDO.setEcpm(0L);
-                dspSlotHourDO.setEcprm(0L);
-            }
+        if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal Profit = dspSlotHourDO.getSpend().add(dspSlotHourDO.getIncome());
 
-            Long spend = dspSlotHourDO.getSpend();
-            if (spend != null && spend != 0) {
-                dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-            } else {
-                dspSlotHourDO.setMediaEcpm(0L);
-                dspSlotHourDO.setMediaEcprm(0L);
-            }
-        } else if (dspPayType == 2 && sspPayType == 1) { // 预算RTB,媒体分成
-            Integer sspDealRatio = sspSlotInfoDO.getSspDealRatio(); // 媒体分成系数
-            if (sspDealRatio == null) {
-                sspDealRatio = 0;
-            }
-            Long spend = dspSlotHourDO.getSpend();
-            if (spend != null && spend != 0 && sspDealRatio != 0) {
-                // 预算收入 = 媒体成本 * 分成系数 / 100
-                Long income = spend * sspDealRatio / 100;
-                // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
-                dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-
-                // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
-                dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-            } else {
-                dspSlotHourDO.setEcpm(0L);
-                dspSlotHourDO.setEcprm(0L);
-                dspSlotHourDO.setMediaEcpm(0L);
-                dspSlotHourDO.setMediaEcprm(0L);
-            }
+            // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
+            dspSlotHourDO.setEcpm(calculateMetric(Profit, dspSlotHourDO.getShowPv(), 1000));
+            // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
+            dspSlotHourDO.setEcprm(calculateMetric(Profit, dspSlotHourDO.getReqPv(), 1000000));
+        } else {
+            dspSlotHourDO.setEcpm(0.0);
+            dspSlotHourDO.setEcprm(0.0);
         }
+        if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+            // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
+            dspSlotHourDO.setMediaEcpm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getShowPv(), 1000));
+            // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
+            dspSlotHourDO.setMediaEcprm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getReqPv(), 1000000));
+        } else {
+            dspSlotHourDO.setMediaEcpm(0.0);
+            dspSlotHourDO.setMediaEcprm(0.0);
+        }
+
     }
 
 
     private double formatRate(double value) {
         return BigDecimal.valueOf(value)
                 .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
+    // 使用 BigDecimal 计算指标并统一保留 4 位小数。
+    private double calculateMetric(BigDecimal amount, Long requestCount, long multiplier) {
+        return amount.multiply(BigDecimal.valueOf(multiplier))
+                .divide(BigDecimal.valueOf(requestCount), 3, RoundingMode.HALF_UP)
                 .doubleValue();
     }
 
@@ -372,8 +288,6 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
     public List<DspSlotHourDO> getDspSspSlotHour(Long sspSlotid, Integer date) {
         List<DspSlotHourDO> dspSspSlotHour = dspSlotHourMapper.getDspSspSlotHour(sspSlotid, date);
         for (DspSlotHourDO dspSlotHourDO : dspSspSlotHour) {
-            Long dspSlotId = dspSlotHourDO.getDspSlotId();
-            Long sspSlotId = dspSlotHourDO.getSspSlotId();
 
             Long reqCount = dspSlotHourDO.getReqPv();
             if (reqCount == null || reqCount == 0) {
@@ -394,7 +308,7 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
             } else {
                 dspSlotHourDO.setDisplayRate(0.0);
             }
-// 点击率=点击/展示*100%
+            // 点击率=点击/展示*100%
             Long clickPv = dspSlotHourDO.getClickPv();
             if (showPv != null && showPv != 0) {
                 dspSlotHourDO.setClickRate(clickPv != null
@@ -404,75 +318,86 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
                 dspSlotHourDO.setClickRate(0.0);
             }
 
-
-            // 查找预算DspSlotInfo 对象
-            DspSlotInfoDO dspSlotInfoDO = dspSlotInfoMapper.selectById(dspSlotId);
-            if (dspSlotInfoDO == null) {
-                return null;
+            if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal Profit = dspSlotHourDO.getSpend().add(dspSlotHourDO.getIncome());
+                // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
+                dspSlotHourDO.setEcpm(calculateMetric(Profit, dspSlotHourDO.getShowPv(), 1000));
+                // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
+                dspSlotHourDO.setEcprm(calculateMetric(Profit, dspSlotHourDO.getReqPv(), 1000000));
+            } else {
+                dspSlotHourDO.setEcpm(0.0);
+                dspSlotHourDO.setEcprm(0.0);
             }
-            // 上游预算结算方式，1=分成，2=RTB 3=固价
-            Integer dspPayType = dspSlotInfoDO.getDspPayType();
-            if (dspPayType == null) {
-                return null;
+            if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
+                // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
+                dspSlotHourDO.setMediaEcpm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getShowPv(), 1000));
+                // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
+                dspSlotHourDO.setMediaEcprm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getReqPv(), 1000000));
+            } else {
+                dspSlotHourDO.setMediaEcpm(0.0);
+                dspSlotHourDO.setMediaEcprm(0.0);
             }
-
-            SspSlotInfoDO sspSlotInfoDO = sspSlotInfoMapper.selectById(sspSlotId);
-            if (sspSlotInfoDO == null) {
-                return null;
-            }
-            // 下游媒体结算方式，1=分成，2=RTB, 3=固价
-            Integer sspPayType = sspSlotInfoDO.getSspPayType();
-            if (sspPayType == null) {
-                return null;
-            }
-
-            // 预算RTB,媒体RTB
-            if (dspPayType == 2 && sspPayType == 2) {
-                Long income = dspSlotHourDO.getIncome();
-                if (income != null && income != 0) {
-                    dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                    dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setEcpm(0L);
-                    dspSlotHourDO.setEcprm(0L);
-                }
-
-                Long spend = dspSlotHourDO.getSpend();
-                if (spend != null && spend != 0) {
-                    dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                    dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setMediaEcpm(0L);
-                    dspSlotHourDO.setMediaEcprm(0L);
-                }
-            } else if (dspPayType == 2 && sspPayType == 1) { // 预算RTB,媒体分成
-                Integer sspDealRatio = sspSlotInfoDO.getSspDealRatio(); // 媒体分成系数
-                if (sspDealRatio == null) {
-                    sspDealRatio = 0;
-                }
-                Long spend = dspSlotHourDO.getSpend();
-                if (spend != null && spend != 0 && sspDealRatio != 0) {
-                    // 预算收入 = 媒体成本 * 分成系数 / 100
-                    Long income = spend * sspDealRatio / 100;
-                    // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                    dspSlotHourDO.setEcpm(income * 1000 / reqCount);
-                    // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
-                    dspSlotHourDO.setEcprm(income * 1000000 / reqCount);
-
-                    // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                    dspSlotHourDO.setMediaEcpm(spend * 1000 / reqCount);
-                    // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
-                    dspSlotHourDO.setMediaEcprm(spend * 1000000 / reqCount);
-                } else {
-                    dspSlotHourDO.setEcpm(0L);
-                    dspSlotHourDO.setEcprm(0L);
-                    dspSlotHourDO.setMediaEcpm(0L);
-                    dspSlotHourDO.setMediaEcprm(0L);
-                }
-            }
-
         }
+            // 查看是否解绑
+            for (DspSlotHourDO dspSlotHourDO1 : dspSspSlotHour) {
+                List<LaunchDO> launchDOS = launchMapper.selectLaunchBySspSlotIdDspSlotId(sspSlotid, dspSlotHourDO1.getDspSlotId());
+                if (launchDOS.size() > 0) {
+                    dspSlotHourDO1.setIsDeleted(1);// 没有解绑
+                } else {
+                    dspSlotHourDO1.setIsDeleted(2); // 解绑
+                }
+            }
+
         return dspSspSlotHour;
+    }
+
+    @Override
+    public List<DspSlotHourTrendRespVO> getDspSlotHourTrend(DspSlotHourPageReqVO pageReqVO) {
+        // 按小时聚合查询原始指标（SQL 中 MOD(date,100) 已将 date 转为小时值 0~23）
+        List<DspSlotHourDO> hourList = dspSlotHourMapper.selectHourTrend(pageReqVO);
+        if (CollUtil.isEmpty(hourList)) {
+            return Collections.emptyList();
+        }
+
+        List<DspSlotHourTrendRespVO> resultList = new ArrayList<>(hourList.size());
+        for (DspSlotHourDO hour : hourList) {
+            Long reqCount = hour.getReqPv() == null ? 0L : hour.getReqPv();
+            Long retPv = hour.getRetPv() == null ? 0L : hour.getRetPv();
+            Long showPv = hour.getShowPv() == null ? 0L : hour.getShowPv();
+            Long clickPv = hour.getClickPv() == null ? 0L : hour.getClickPv();
+            // 小时数据的成本、收入为 BigDecimal，保留原始精度返回趋势接口。
+            BigDecimal spend = hour.getSpend() == null ? BigDecimal.ZERO : hour.getSpend();
+            BigDecimal income = hour.getIncome() == null ? BigDecimal.ZERO : hour.getIncome();
+            BigDecimal po = spend.subtract(income);
+            // SQL 返回的 date 字段即为小时值（0~23）
+            Integer hourValue = hour.getDate() == null ? 0 : hour.getDate();
+
+            DspSlotHourTrendRespVO vo = DspSlotHourTrendRespVO.builder()
+                    .hour(hourValue)
+                    .reqPv(reqCount)
+                    .retPv(retPv)
+                    .showPv(showPv)
+                    .clickPv(clickPv)
+                    .spend(spend)
+                    .income(income)
+                    // 填充率 = 返回PV / 请求数 * 100%
+                    .fillRate(reqCount != 0 ? formatRate(retPv * 100.0 / reqCount) : 0.0)
+                    // 展现率 = 展示PV / 返回PV * 100%
+                    .displayRate(retPv != 0 ? formatRate(showPv * 100.0 / retPv) : 0.0)
+                    // 点击率 = 点击PV / 展示PV * 100%
+                    .clickRate(showPv != 0 ? formatRate(clickPv * 100.0 / showPv) : 0.0)
+                    // ecpm = 收入 / 请求数 * 1000
+                    .ecpm(reqCount != 0 ? calculateMetric(po, showPv, 1000) : 0.0)
+                    // 媒体ecpm = 成本 / 请求数 * 1000
+                    .mediaEcpm(reqCount != 0 ? calculateMetric(spend, showPv, 1000) : 0.0)
+                    // ecprm = 收入 / 请求数 * 1000000
+                    .ecprm(reqCount != 0 ? calculateMetric(po, reqCount, 1000000) : 0.0)
+                    // 媒体ecprm = 成本 / 请求数 * 1000000
+                    .mediaEcprm(reqCount != 0 ? calculateMetric(spend, reqCount, 1000000) : 0.0)
+                    .build();
+            resultList.add(vo);
+        }
+        return resultList;
     }
 
 }

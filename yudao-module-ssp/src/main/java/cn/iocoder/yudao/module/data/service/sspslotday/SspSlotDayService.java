@@ -66,5 +66,17 @@ public interface SspSlotDayService {
      * @param date 日期
      * @return 聚合结果
      */
-    SspSlotDayRespVO getSspSlotDaySum(Long date);
+    SspSlotDayRespVO getSspSlotDaySum(List<String> date);
+
+    SspSlotDayRespVO getSspSlotDaySum(SspSlotDayPageReqVO reqVO);
+
+    List<SspSlotDayDO> getMediaCompanySum(Long date);
+
+    /**
+     * 日报表折线图：按天聚合
+     *
+     * @param pageReqVO 查询条件（含时间范围）
+     * @return 每天一条趋势数据
+     */
+    List<SspSlotDayTrendRespVO> getSspSlotDayTrend(SspSlotDayPageReqVO pageReqVO);
 }

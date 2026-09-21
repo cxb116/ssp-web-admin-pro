@@ -7,6 +7,7 @@ import lombok.*;
 import cn.idev.excel.annotation.*;
 
 import java.util.Date;
+import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - DSP数据导入模板 Excel VO")
 @Data
@@ -21,32 +22,24 @@ public class InputExecTemplateVO {
 
     @Schema(description = "预算方广告位ID", example = "DSP_SLOT_001")
     @ExcelProperty("预算方广告位ID")
-    @ColumnWidth(20)
+    @ColumnWidth(60)
     private String dspSlotCode;
 
     @Schema(description = "成本（元）", example = "10000")
     @ExcelProperty("收益(元)")
-    @ColumnWidth(20)
-    private Long spend;
+    @ColumnWidth(40)
+    private BigDecimal profit;
 
     @Schema(description = "广告位ID", example = "366716")
-    @ExcelProperty("广告位ID")
-    @ColumnWidth(20)
     private Long sspSlotId;
 
     @Schema(description = "结算方式", example = "CPM")
-    @ExcelProperty("结算方式")
-    @ColumnWidth(10)
     private String settleType;
 
     @Schema(description = "结算比例", example = "0.7")
-    @ExcelProperty("结算比例")
-    @ColumnWidth(20)
     private Double settleRate;
 
     @Schema(description = "媒体公司", example = "腾讯广告")
-    @ExcelProperty("媒体公司")
-    @ColumnWidth(20)
     private String mediaCompany;
 
 

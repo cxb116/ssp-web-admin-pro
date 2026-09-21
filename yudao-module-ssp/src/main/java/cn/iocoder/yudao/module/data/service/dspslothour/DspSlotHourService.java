@@ -75,4 +75,12 @@ public interface DspSlotHourService {
      * @return 子表数据
      */
     List<DspSlotHourDO> getDspSspSlotHour(Long sspSlotId, Integer date);
+
+    /**
+     * 小时报表折线图：按小时聚合（单天 0~23 点）
+     *
+     * @param pageReqVO 查询条件（包含时间范围）
+     * @return 每小时一条趋势记录
+     */
+    List<DspSlotHourTrendRespVO> getDspSlotHourTrend(DspSlotHourPageReqVO pageReqVO);
 }

@@ -1,8 +1,5 @@
 package cn.iocoder.yudao.module.data.controller.admin.dspslotday;
 
-import cn.iocoder.yudao.module.data.controller.admin.sspslotday.vo.SspSlotDayPageReqVO;
-import cn.iocoder.yudao.module.data.controller.admin.sspslotday.vo.SspSlotDayRespVO;
-import cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -11,9 +8,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.io.IOException;
 
@@ -104,9 +102,52 @@ public class DspSlotDayController {
     @GetMapping("/sum")
     @Operation(summary = "合计")
     @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
-    public CommonResult<DspSlotDayRespVO> getDspSlotDaySum(@RequestParam("date") Long date) {
-        DspSlotDayRespVO result = dspSlotDayService.getDspSlotDaySum(date);
+    public CommonResult<DspSlotDayRespVO> getDspSlotDaySum(@Valid DspSlotDayPageReqVO reqVO) {
+        String[] date = reqVO.getDate() == null ? null : reqVO.getDate().toArray(new String[0]);
+        if (date != null && date.length == 1 && date[0] != null && date[0].contains(",")) {
+            date = date[0].split(",");
+        }
+        if (date == null || date.length != 2 || date[0] == null || date[1] == null) {
+            throw new IllegalArgumentException("日期格式不正确，应为[开始日期,结束日期]，格式yyyyMMdd");
+        }
+        List<String> normalizedDate = Arrays.asList(
+                date[0].trim().replace("-", ""),
+                date[1].trim().replace("-", ""));
+        if (!normalizedDate.get(0).matches("\\d{8}") || !normalizedDate.get(1).matches("\\d{8}")
+                || normalizedDate.get(0).compareTo(normalizedDate.get(1)) > 0) {
+            throw new IllegalArgumentException("日期格式不正确，应为[开始日期,结束日期]，格式yyyyMMdd");
+        }
+        reqVO.setDate(normalizedDate);
+        DspSlotDayRespVO result = dspSlotDayService.getDspSlotDaySum(reqVO);
         return success(result);
+    }
+
+    @GetMapping("/trend")
+    @Operation(summary = "日报表折线图（按天聚合）")
+    @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
+    public CommonResult<List<DspSlotDayTrendRespVO>> getDspSlotDayTrend(@Valid DspSlotDayPageReqVO pageReqVO) {
+        // 时间范围切换：date 数组长度 >= 2 表示存在起止范围
+        if (pageReqVO.getDate() != null && pageReqVO.getDate().size() >= 2) {
+            return success(dspSlotDayService.getDspSlotDayTrend(pageReqVO));
+        }
+        // 未传时间范围时，默认返回最近 7 天数据
+        DspSlotDayPageReqVO defaultReqVO = buildDefaultWeekReqVO(pageReqVO);
+        return success(dspSlotDayService.getDspSlotDayTrend(defaultReqVO));
+    }
+
+    /**
+     * 当未指定时间范围时，默认取最近 7 天（含今天）
+     * @param reqVO 原始查询条件（不含时间范围）
+     * @return 补全默认时间范围的查询条件
+     */
+    private DspSlotDayPageReqVO buildDefaultWeekReqVO(DspSlotDayPageReqVO reqVO) {
+        // 计算最近 7 天的起止日期（yyyy-MM-dd）
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate start = today.minusDays(6);
+        String startStr = start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String endStr = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        reqVO.setDate(Arrays.asList(startStr, endStr));
+        return reqVO;
     }
 
 //    @GetMapping("/details")
@@ -136,8 +177,28 @@ public class DspSlotDayController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<DspSlotDayDO> list = dspSlotDayService.getDspSlotDayPage(pageReqVO).getList();
+
+        for (DspSlotDayDO dspSlotDayDO : list) {
+            BigDecimal divisor = BigDecimal.valueOf(100000);
+
+            BigDecimal income = dspSlotDayDO.getIncome();
+            BigDecimal spend = dspSlotDayDO.getSpend();
+
+            dspSlotDayDO.setTotalIncome(
+                    income.add(spend).divide(divisor, 2, RoundingMode.HALF_UP)
+            );
+
+            dspSlotDayDO.setSpend(
+                    spend.divide(divisor, 2, RoundingMode.HALF_UP)
+            );
+
+            dspSlotDayDO.setIncome(
+                    income.divide(divisor, 2, RoundingMode.HALF_UP)
+            );
+        }
+
         // 导出 Excel
-        ExcelUtils.write(response, "DSP预算广告位日期报.xls", "数据", DspSlotDayRespVO.class,
+        ExcelUtils.write(response, "预算广告位日期报.xls", "数据", DspSlotDayRespVO.class,
                         BeanUtils.toBean(list, DspSlotDayRespVO.class));
     }
 
@@ -153,6 +214,23 @@ public class DspSlotDayController {
         List<DspSlotDayRespExecVo> list = dspSlotDayService.getDspSlotDayExceVo(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "DSP预算广告位日期报.xls", "数据", DspSlotDayRespExecVo.class, list);
+    }
+
+
+    @GetMapping("/dsp-list")
+    @Operation(summary = "获得DSP预算")
+    @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
+    public CommonResult<List<DspSlotDayRespVO>> getDspList(@RequestParam("date") Long date) {
+        return success(BeanUtils.toBean(dspSlotDayService.getDspCompanySum(date), DspSlotDayRespVO.class));
+    }
+
+
+    @GetMapping("/page-info")
+    @Operation(summary = "预算详情数据表")
+    @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
+    public CommonResult<PageResult<DspSlotDayPageInfoRespVO>> getDspSlotDayPageInfo(@Valid DspSlotDayPageReqVO pageReqVO) {
+        PageResult<DspSlotDayDO> pageResult = dspSlotDayService.getDspSlotDayPageInfo(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, DspSlotDayPageInfoRespVO.class));
     }
 
 }

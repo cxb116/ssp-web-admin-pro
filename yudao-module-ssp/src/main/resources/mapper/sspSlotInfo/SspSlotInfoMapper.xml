@@ -9,6 +9,15 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
     -->
 
+    <select id="selectSspSlotId" resultType="cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO">
+        SELECT
+            *
+        FROM ssp_slot_info
+        WHERE id = #{id}
+    </select>
+
+
+
     <!--
         根据 ID 查询广告位详情（带关联数据）
     -->

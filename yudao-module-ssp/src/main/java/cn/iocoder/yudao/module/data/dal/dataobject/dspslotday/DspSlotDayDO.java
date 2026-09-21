@@ -1,6 +1,10 @@
 package cn.iocoder.yudao.module.data.dal.dataobject.dspslotday;
 
+import cn.idev.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -78,11 +82,11 @@ public class DspSlotDayDO extends BaseDO {
     /**
      * 成本(分)
      */
-    private Long spend;
+    private BigDecimal spend;
     /**
      * 收入(分)
      */
-    private Long income;
+    private BigDecimal income;
     /**
      * 折后点击
      */
@@ -127,6 +131,9 @@ public class DspSlotDayDO extends BaseDO {
      */
     @TableField(exist = false)
     private String companyName;
+
+    @TableField(exist = false)
+    private Long companyId;
 
     /**
      * 产品名称（非表字段，关联查询获取）
@@ -201,6 +208,15 @@ public class DspSlotDayDO extends BaseDO {
     @TableField(exist = false)
     private double mediaEcprm;
 
+    /**
+     * 是否解绑 1 没有解绑 2 解绑
+     */
+    @TableField(exist = false)
+    private int isDeleted;
 
+//    @Schema(description = "收益（分）")
+//    @ExcelProperty("TotalIncome")
+    @TableField(exist = false)
+    private BigDecimal TotalIncome;
 
 }

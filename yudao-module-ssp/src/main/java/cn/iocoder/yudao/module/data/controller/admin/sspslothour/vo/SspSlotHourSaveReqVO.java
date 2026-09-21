@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.data.controller.admin.sspslothour.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import javax.validation.constraints.*;
 
@@ -63,10 +65,10 @@ public class SspSlotHourSaveReqVO {
     private Long retUv;
 
     @Schema(description = "成本(分)")
-    private Long spend;
+    private BigDecimal spend;
 
     @Schema(description = "收入(分)")
-    private Long income;
+    private BigDecimal income;
 
     @Schema(description = "折后点击")
     private Long discountClickPv;

@@ -76,7 +76,10 @@ public interface DspSlotDayService {
      * @param date
      * @return
      */
-    DspSlotDayRespVO getDspSlotDaySum(Long date);
+    DspSlotDayRespVO getDspSlotDaySum(List<String> date);
+    DspSlotDayRespVO getDspSlotDaySum(DspSlotDayPageReqVO reqVO);
+
+    List<DspSlotDayDO> getDspCompanySum(Long date);
 
     /**
      * 预算详情信息
@@ -84,6 +87,18 @@ public interface DspSlotDayService {
      * @return
      */
     PageResult<DspSlotDayDO> getDspSlotDayPageDetail(@Valid DspSlotDayPageReqVO pageReqVO);
+
+    PageResult<DspSlotDayDO> getDspSlotDayPageInfo(@Valid DspSlotDayPageReqVO pageReqVO);
+
+    /**
+     * 日报表折线图：按天聚合
+     *
+     * @param pageReqVO 查询条件（包含时间范围）
+     * @return 每天一条趋势记录
+     */
+    List<DspSlotDayTrendRespVO> getDspSlotDayTrend(DspSlotDayPageReqVO pageReqVO);
+
+
 
 //    PageResult<DspSlotDayRespExecVo> getDspSlotDayDeatil(@Valid SspSlotDayPageReqVO pageReqVO);
 }

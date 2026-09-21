@@ -40,14 +40,14 @@ public class DspSlotHourController {
 
     @PostMapping("/create")
     @Operation(summary = "创建DSP预算广告位小时报")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:create')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:create')")
     public CommonResult<Long> createDspSlotHour(@Valid @RequestBody DspSlotHourSaveReqVO createReqVO) {
         return success(dspSlotHourService.createDspSlotHour(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新DSP预算广告位小时报")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:update')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:update')")
     public CommonResult<Boolean> updateDspSlotHour(@Valid @RequestBody DspSlotHourSaveReqVO updateReqVO) {
         dspSlotHourService.updateDspSlotHour(updateReqVO);
         return success(true);
@@ -56,7 +56,7 @@ public class DspSlotHourController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除DSP预算广告位小时报")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:delete')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:delete')")
     public CommonResult<Boolean> deleteDspSlotHour(@RequestParam("id") Long id) {
         dspSlotHourService.deleteDspSlotHour(id);
         return success(true);
@@ -65,7 +65,7 @@ public class DspSlotHourController {
     @DeleteMapping("/delete-list")
     @Parameter(name = "ids", description = "编号", required = true)
     @Operation(summary = "批量删除DSP预算广告位小时报")
-                @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:delete')")
+//                @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:delete')")
     public CommonResult<Boolean> deleteDspSlotHourList(@RequestParam("ids") List<Long> ids) {
         dspSlotHourService.deleteDspSlotHourListByIds(ids);
         return success(true);
@@ -74,7 +74,7 @@ public class DspSlotHourController {
     @GetMapping("/get")
     @Operation(summary = "获得DSP预算广告位小时报")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
     public CommonResult<DspSlotHourRespVO> getDspSlotHour(@RequestParam("id") Long id) {
         DspSlotHourDO dspSlotHour = dspSlotHourService.getDspSlotHour(id);
         return success(BeanUtils.toBean(dspSlotHour, DspSlotHourRespVO.class));
@@ -82,7 +82,7 @@ public class DspSlotHourController {
 
     @GetMapping("/page")
     @Operation(summary = "获得DSP预算广告位小时报分页")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
     public CommonResult<PageResult<DspSlotHourRespVO>> getDspSlotHourPage(@Valid DspSlotHourPageReqVO pageReqVO) {
         PageResult<DspSlotHourDO> pageResult = dspSlotHourService.getDspSlotHourPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, DspSlotHourRespVO.class));
@@ -92,7 +92,7 @@ public class DspSlotHourController {
     @Operation(summary = "获得媒体广告位小时报子表（按 sspSlotId + date 查预算位明细）")
     @Parameter(name = "sspSlotId", description = "媒体广告位ID", required = true, example = "1024")
     @Parameter(name = "date", description = "时间 yyyyMMddHH", required = true, example = "2026071510")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
     public CommonResult<List<DspSlotHourRespVO>> getSSPDspSlotHour(
             @RequestParam("sspSlotId") Long sspSlotId,
             @RequestParam("date") Integer date) {
@@ -100,9 +100,30 @@ public class DspSlotHourController {
         return success(BeanUtils.toBean(list, DspSlotHourRespVO.class));
     }
 
+    @GetMapping("/trend")
+    @Operation(summary = "小时报表折线图（单天0~23点按小时聚合）")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:query')")
+    public CommonResult<List<DspSlotHourTrendRespVO>> getDspSlotHourTrend(@Valid DspSlotHourPageReqVO pageReqVO) {
+        // 未指定日期范围时，默认查询今天（yyyyMMdd00 ~ yyyyMMdd23）
+        if (pageReqVO.getDate() == null || pageReqVO.getDate().length == 0) {
+            pageReqVO.setDate(buildTodayHourRange());
+        }
+        return success(dspSlotHourService.getDspSlotHourTrend(pageReqVO));
+    }
+
+    /**
+     * 构建今天 0 点到 23 点的小时范围（yyyyMMdd00 ~ yyyyMMdd23）
+     * @return 长度为 2 的日期数组
+     */
+    private Integer[] buildTodayHourRange() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String day = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return new Integer[]{Integer.valueOf(day + "00"), Integer.valueOf(day + "23")};
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出DSP预算广告位小时报 Excel")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")
     @ApiAccessLog(operateType = EXPORT)
     public void exportDspSlotHourExcel(@Valid DspSlotHourPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
@@ -115,7 +136,7 @@ public class DspSlotHourController {
 
     @GetMapping("/export-excel-detail")
     @Operation(summary = "导出DSP预算广告位小时报详情 Excel")
-    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")
+//    @PreAuthorize("@ss.hasPermission('data:dsp-slot-hour:export')")
     @ApiAccessLog(operateType = EXPORT)
     public void exportDspSlotHourExcelDetail(@Valid DspSlotHourPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {

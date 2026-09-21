@@ -7,6 +7,8 @@ import cn.iocoder.yudao.framework.excel.core.convert.DictConvert;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Schema(description = "管理后台 - DSP预算广告位小时报导出 Response VO")
 @Data
 @ExcelIgnoreUnannotated
@@ -155,10 +157,10 @@ public class DspSlotHourRespExecVo {
 
     @Schema(description = "成本(分)")
     @ExcelProperty("成本(分)")
-    private Long spend;
+    private BigDecimal spend;
 
     @Schema(description = "收入(分)")
     @ExcelProperty("收入(分)")
-    private Long income;
+    private BigDecimal income;
 
 }

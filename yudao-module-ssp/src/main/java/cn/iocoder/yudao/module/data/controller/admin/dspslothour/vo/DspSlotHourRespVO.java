@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.data.controller.admin.dspslothour.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
@@ -66,11 +68,11 @@ public class DspSlotHourRespVO {
 
     @Schema(description = "成本(分)")
     @ExcelProperty("成本(分)")
-    private Long spend;
+    private BigDecimal spend;
 
     @Schema(description = "收入(分)")
     @ExcelProperty("收入(分)")
-    private Long income;
+    private BigDecimal income;
 
     @Schema(description = "折后点击")
     @ExcelProperty("折后点击")
@@ -160,4 +162,6 @@ public class DspSlotHourRespVO {
     @ExcelProperty("媒体ecprm")
     private Double mediaEcprm;
 
+    @Schema(description = "是否删除")
+    private int isDeleted;
 }
