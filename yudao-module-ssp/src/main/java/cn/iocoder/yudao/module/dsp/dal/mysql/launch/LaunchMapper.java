@@ -50,11 +50,21 @@ public interface LaunchMapper extends BaseMapperX<LaunchDO> {
     List<LaunchDO> selectLaunchBySspSlotId(Long sspSlotId);
 
     /**
+     * 批量查询 Launch 的绑定关系（仅取 ssp_slot_id 列，供列表页统计各广告位绑定条数，避免逐条查询）
+     */
+    List<LaunchDO> selectLaunchSspSlotIds(@Param("sspSlotIds") Collection<Long> sspSlotIds);
+
+    /**
      *  根据dspSlotId 查询 Launch 列表
      * @param id dspSlotId
      * @return
      */
     List<LaunchDO> selectLaunchByDspSlotId(Long id);
+
+    /**
+     * 批量查询 Launch 的绑定关系（仅取 dsp_slot_id 列，供列表页统计各预算位绑定条数，避免逐条查询）
+     */
+    List<LaunchDO> selectLaunchDspSlotIds(@Param("dspSlotIds") Collection<Long> dspSlotIds);
 
     /**
      * 根据 dspSlotId 查询 SSP 广告位列表

@@ -77,4 +77,17 @@ public interface DspSlotDayMapper extends BaseMapperX<DspSlotDayDO> {
     DspSlotDayDO getDspSlotDaySum(@Param("date") List<String> date);
     DspSlotDayDO getDspSlotDaySumByCondition(@Param("reqVO") DspSlotDayPageReqVO reqVO);
 
+    /**
+     * 按预算位ID列表 + 日期范围（左闭右开，兼容 yyyyMMdd / yyyyMMddHH 两种 date 格式）汇总请求PV
+     *
+     * @param dspSlotIds 预算位ID列表
+     * @param dateBegin  开始日期（含），如 20261106
+     * @param dateEnd    结束日期（不含），如 20261107
+     * @return 每个预算位一条，dsp_slot_id + req_pv（SUM 汇总）
+     */
+    @InterceptorIgnore(tenantLine = "true") // 聚合查询（SUM + GROUP BY）会导致多租户拦截器解析失败，此处跳过租户 SQL 解析
+    List<DspSlotDayDO> selectReqPvSumByDspSlotIds(@Param("dspSlotIds") List<Long> dspSlotIds,
+                                                  @Param("dateBegin") Long dateBegin,
+                                                  @Param("dateEnd") Long dateEnd);
+
 }

@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import cn.iocoder.yudao.module.ssp.controller.admin.sspSlotInfo.vo.*;
 import cn.iocoder.yudao.module.ssp.dal.dataobject.sspSlotInfo.SspSlotInfoDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -145,20 +146,26 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         Long offset = (pageReqVO.getPageNo() - 1L) * pageReqVO.getPageSize();
         List<SspSlotInfoDO> list = slotInfoMapper.selectPage(pageReqVO, offset, pageReqVO.getPageSize());
-        for (SspSlotInfoDO sspSlotInfo : list) {
-            Long id = sspSlotInfo.getId();
-            List<LaunchDO> launchDOS = launchMapper.selectLaunchBySspSlotId(id);
-            sspSlotInfo.setLs(launchDOS.size());
-
-            SspSlotDayDO sspSlotDayDO = spSlotDayMapper.selectRequestCount(sspSlotInfo.getId(), time);
-            if (sspSlotDayDO != null) {
-                sspSlotInfo.setReqCount(sspSlotDayDO.getReqCount());
-            }
-
-
+        Long total = slotInfoMapper.selectPageCount(pageReqVO);
+        if (CollUtil.isEmpty(list)) {
+            return new PageResult<>(list, total);
         }
 
-        Long total = slotInfoMapper.selectPageCount(pageReqVO);
+        // 绑定条数、当天请求数按本页广告位 id 批量查询，避免逐行发 SQL（N+1）
+        List<Long> slotIds = convertList(list, SspSlotInfoDO::getId);
+        Map<Long, Long> launchCountMap = launchMapper.selectLaunchSspSlotIds(slotIds).stream()
+                .collect(Collectors.groupingBy(LaunchDO::getSspSlotId, Collectors.counting()));
+        Map<Long, Long> reqCountMap = new HashMap<>();
+        for (SspSlotDayDO sspSlotDay : spSlotDayMapper.selectRequestCountBySspSlotIds(slotIds, time)) {
+            if (sspSlotDay.getSspSlotId() != null && sspSlotDay.getReqCount() != null) {
+                reqCountMap.merge(sspSlotDay.getSspSlotId(), sspSlotDay.getReqCount(), Long::sum);
+            }
+        }
+
+        for (SspSlotInfoDO sspSlotInfo : list) {
+            sspSlotInfo.setLs(launchCountMap.getOrDefault(sspSlotInfo.getId(), 0L).intValue());
+            sspSlotInfo.setReqCount(reqCountMap.getOrDefault(sspSlotInfo.getId(), 0L));
+        }
         return new PageResult<>(list, total);
     }
 

@@ -14,11 +14,8 @@ import javax.servlet.http.*;
 import java.util.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -100,30 +97,43 @@ public class MediaController {
     @PreAuthorize("@ss.hasPermission('ssp:media:query')")
     public CommonResult<PageResult<MediaRespVO>> getMediaPage(@Valid MediaPageReqVO pageReqVO) {
         PageResult<MediaDO> pageResult = mediaService.getMediaPage(pageReqVO);
-        PageResult<MediaRespVO> result = BeanUtils.toBean(pageResult, MediaRespVO.class);
-        result.getList().forEach(item -> item.setSsoToken(createSsoToken(item.getAccount(), item.getPassword())));
-        return success(result);
+        return success(BeanUtils.toBean(pageResult, MediaRespVO.class));
     }
 
-    private String createSsoToken(String account,String pwd) {
+    @GetMapping("/sso-token")
+    @Operation(summary = "获得媒体 SSO 登录票据")
+    @Parameter(name = "id", description = "媒体编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('ssp:media:query')")
+    public CommonResult<String> getMediaSsoToken(@RequestParam("id") Long id) {
+        MediaDO media = mediaService.getMedia(id);
+        if (media == null) {
+            return CommonResult.error(404, "媒体不存在");
+        }
+        // 点击"登录后台"时现签发，票据短期有效，避免列表加载时的旧票据过期问题
+        return success(createSsoToken(media.getAccount()));
+    }
+
+    /** SSO 票据有效期（毫秒），签发后需立即使用 */
+    private static final long SSO_TOKEN_EXPIRE_MILLIS = 2 * 60 * 1000L;
+
+    /**
+     * 签发 HS512 JWT 一次性票据，与媒体后台（MEDIA-ADMIN）的 /api/media/auth/sso-login 校验逻辑对齐，
+     * 密钥须与媒体后台 jwt.secret 配置一致。
+     */
+    private String createSsoToken(String account) {
         try {
-            // AES-GCM 提供机密性和完整性；密钥统一从配置项派生为 256 bit。
-            byte[] keyBytes = MessageDigest.getInstance("SHA-256")
-                    .digest(ssoSecret.getBytes(StandardCharsets.UTF_8));
-            byte[] iv = new byte[12];
-            new SecureRandom().nextBytes(iv);
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(keyBytes, "AES"),
-                    new GCMParameterSpec(128, iv));
-            Map<String, String> payloadData = new LinkedHashMap<>();
-            payloadData.put("account", account == null ? "" : account);
-            payloadData.put("password", pwd == null ? "" : pwd);
-            String payload = objectMapper.writeValueAsString(payloadData);
-            byte[] encrypted = cipher.doFinal(payload.getBytes(StandardCharsets.UTF_8));
-            byte[] token = new byte[iv.length + encrypted.length];
-            System.arraycopy(iv, 0, token, 0, iv.length);
-            System.arraycopy(encrypted, 0, token, iv.length, encrypted.length);
-            return base64Url(token);
+            long now = System.currentTimeMillis();
+            Map<String, Object> claims = new LinkedHashMap<>();
+            claims.put("account", account == null ? "" : account);
+            claims.put("sso", Boolean.TRUE);
+            claims.put("iat", now / 1000);
+            claims.put("exp", (now + SSO_TOKEN_EXPIRE_MILLIS) / 1000);
+            String header = base64Url("{\"alg\":\"HS512\"}".getBytes(StandardCharsets.UTF_8));
+            String payload = base64Url(objectMapper.writeValueAsString(claims).getBytes(StandardCharsets.UTF_8));
+            Mac mac = Mac.getInstance("HmacSHA512");
+            mac.init(new SecretKeySpec(ssoSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
+            String signature = base64Url(mac.doFinal((header + "." + payload).getBytes(StandardCharsets.UTF_8)));
+            return header + "." + payload + "." + signature;
         } catch (Exception e) {
             throw new IllegalStateException("创建 SSO Token 失败", e);
         }

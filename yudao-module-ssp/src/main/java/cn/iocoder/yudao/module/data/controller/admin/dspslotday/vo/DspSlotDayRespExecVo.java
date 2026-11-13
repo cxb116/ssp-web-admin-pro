@@ -76,6 +76,10 @@ public class DspSlotDayRespExecVo {
     @ExcelProperty("丢弃请求")
     private Long discard;
 
+    @Schema(description = "响应超时丢弃")
+    @ExcelProperty("响应超时丢弃")
+    private Long retDiscard;
+
 
     @Schema(description = "返回PV")
     @ExcelProperty("返回PV")

@@ -38,7 +38,6 @@
         <opengauss.jdbc.version>7.0.0-RC3-og</opengauss.jdbc.version>
         <taos.version>3.8.3</taos.version>
         <!-- 消息队列 -->
-        <rocketmq-spring.version>2.3.5</rocketmq-spring.version>
         <!-- 服务保障相关 -->
         <lock4j.version>2.2.7</lock4j.version>
         <!-- 监控相关 -->
@@ -329,16 +328,6 @@
             </dependency>
 
             <!-- 消息队列相关 -->
-            <dependency>
-                <groupId>cn.iocoder.boot</groupId>
-                <artifactId>yudao-spring-boot-starter-mq</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.rocketmq</groupId>
-                <artifactId>rocketmq-spring-boot-starter</artifactId>
-                <version>${rocketmq-spring.version}</version>
-            </dependency>
 
             <!-- 服务保障相关 -->
             <dependency>

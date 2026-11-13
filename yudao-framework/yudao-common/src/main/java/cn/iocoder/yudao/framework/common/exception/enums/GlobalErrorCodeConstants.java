@@ -85,4 +85,12 @@ public interface GlobalErrorCodeConstants {
 
     // ========== DSP数据导入 2300 ==========
     ErrorCode INPUT_EXEC_NOT_EXISTS = new ErrorCode(2300, "DSP数据导入不存在");
+
+    ErrorCode DOMAIN_NOT_EXISTS = new ErrorCode(2400, "DSP域名管理不存在");
+
+    ErrorCode INFO_NOT_EXISTS = new ErrorCode(2500, "DSP域名详情不存在");
+
+    ErrorCode DOMAIN_NOT_COMPANY_NOT_EXISTS = new ErrorCode(2500, "DSP域名公司列不存在");
+
+    ErrorCode DOMAIN_COMPANY_DOMAIN_EXISTS = new ErrorCode(2600, "该域名已存在，请勿重复添加");
 }

@@ -47,6 +47,9 @@ public class DspSlotHourSaveReqVO {
     @Schema(description = "丢弃请求")
     private Long discard;
 
+    @Schema(description = "响应超时丢弃")
+    private Long retDiscard;
+
     @Schema(description = "返回PV")
     private Long retPv;
 

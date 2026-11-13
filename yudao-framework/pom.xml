@@ -21,7 +21,6 @@
         <module>yudao-spring-boot-starter-monitor</module>
         <module>yudao-spring-boot-starter-protection</module>
         <module>yudao-spring-boot-starter-job</module>
-        <module>yudao-spring-boot-starter-mq</module>
 
         <module>yudao-spring-boot-starter-excel</module>
         <module>yudao-spring-boot-starter-test</module>

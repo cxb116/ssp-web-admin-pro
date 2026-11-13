@@ -45,6 +45,10 @@
     </appender>
     -->
 
+    <!-- topic log-data 由 dsp-api 启动时才创建，未创建期间消费者每次刷新元数据都会打一条
+         UNKNOWN_TOPIC_OR_PARTITION WARN 刷屏，降到 ERROR 静音（代价：broker 连不上等同类 WARN 也会被屏蔽） -->
+    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR"/>
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <!-- 本地环境下，如果不想【FILE】打印日志，可以注释掉本行 -->

@@ -146,7 +146,7 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
 
 
                 // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                dspSlotHourDO.setEcpm(calculateMetric(Profit, dspSlotHourDO.getShowUv(), 1000));
+                dspSlotHourDO.setEcpm(calculateMetric(Profit, dspSlotHourDO.getShowPv(), 1000));
                 // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
                     dspSlotHourDO.setEcprm(calculateMetric(Profit, dspSlotHourDO.getReqPv(), 1000000));
             } else {
@@ -155,7 +155,7 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
             }
             if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
                 // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                dspSlotHourDO.setMediaEcpm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getShowUv(), 1000));
+                dspSlotHourDO.setMediaEcpm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getShowPv(), 1000));
                 // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
                 dspSlotHourDO.setMediaEcprm(calculateMetric(dspSlotHourDO.getSpend(), dspSlotHourDO.getReqPv(), 1000000));
             } else {
@@ -261,10 +261,9 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
                 .doubleValue();
     }
 
-    /**
+    /* 旧版排序构建：仅支持 hour1 表真实列（驼峰转下划线），不支持填充率等计算列，已由下方白名单版本替代
      * 构建动态排序字段，前端通过 buildSortingField 发送 sortingFields[0].field / sortingFields[0].order
      * 将 camelCase 转为 snake_case，并校验合法字符防止 SQL 注入
-     */
     private String buildSortField(List<SortingField> sortingFields) {
         if (sortingFields == null || sortingFields.isEmpty()) {
             return "hour1.date DESC";
@@ -282,6 +281,81 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
         }
         boolean asc = SortingField.ORDER_ASC.equalsIgnoreCase(sf.getOrder());
         return "hour1." + snake + (asc ? " ASC" : " DESC");
+    }
+    旧版排序构建结束 */
+
+    /**
+     * 可排序字段白名单：排序键 -> ORDER BY 表达式
+     * 本查询为聚合查询（GROUP BY dsp_slot_id, date），存储列按 SUM() 排，派生列用表达式排；
+     * 派生列表达式与 getDspSlotHourPage 中 Java 计算逻辑口径一致（除零记 0、spend<=0 时 ecpm/ecprm 记 0），
+     * 不改变原有计算逻辑，仅用于排序
+     */
+    private static final Map<String, String> SORTABLE_FIELDS = new HashMap<>();
+
+    static {
+        // 维度列
+        SORTABLE_FIELDS.put("date", "hour1.date");
+        SORTABLE_FIELDS.put("dspSlotId", "hour1.dsp_slot_id");
+        SORTABLE_FIELDS.put("dspSlotCode", "MAX(hour1.dsp_slot_code)");
+        SORTABLE_FIELDS.put("dspName", "MAX(dsp.name)");
+        SORTABLE_FIELDS.put("companyName", "MAX(com.name)");
+        SORTABLE_FIELDS.put("productName", "MAX(pro.name)");
+        SORTABLE_FIELDS.put("sspName", "MAX(ssp.name_alise)");
+        SORTABLE_FIELDS.put("appName", "MAX(app.name)");
+        SORTABLE_FIELDS.put("mediaName", "MAX(media.media_company_short)");
+        // 存储指标列（聚合值）
+        SORTABLE_FIELDS.put("reqPv", "SUM(hour1.req_pv)");
+        SORTABLE_FIELDS.put("discard", "SUM(hour1.discard)");
+        SORTABLE_FIELDS.put("retDiscard", "SUM(hour1.ret_discard)");
+        SORTABLE_FIELDS.put("retPv", "SUM(hour1.ret_pv)");
+        SORTABLE_FIELDS.put("showPv", "SUM(hour1.show_pv)");
+        SORTABLE_FIELDS.put("clickPv", "SUM(hour1.click_pv)");
+        SORTABLE_FIELDS.put("discountClickPv", "SUM(hour1.discount_click_pv)");
+        SORTABLE_FIELDS.put("discountShowPv", "SUM(hour1.discount_show_pv)");
+        SORTABLE_FIELDS.put("dplsuccPv", "SUM(hour1.dplsucc_pv)");
+        SORTABLE_FIELDS.put("completePv", "SUM(hour1.complete_pv)");
+        SORTABLE_FIELDS.put("installPv", "SUM(hour1.install_pv)");
+        SORTABLE_FIELDS.put("activatePv", "SUM(hour1.activate_pv)");
+        SORTABLE_FIELDS.put("spend", "SUM(hour1.spend)");
+        SORTABLE_FIELDS.put("income", "SUM(hour1.income)");
+        // 派生指标列（SQL 表达式，口径与 Java 计算一致）
+        // 填充率 = 返回/请求
+        SORTABLE_FIELDS.put("fillRate", "IFNULL(SUM(hour1.ret_pv) / NULLIF(SUM(hour1.req_pv), 0), 0)");
+        // 展现率 = 展示/返回
+        SORTABLE_FIELDS.put("displayRate", "IFNULL(SUM(hour1.show_pv) / NULLIF(SUM(hour1.ret_pv), 0), 0)");
+        // 点击率 = 点击/展示
+        SORTABLE_FIELDS.put("clickRate", "IFNULL(SUM(hour1.click_pv) / NULLIF(SUM(hour1.show_pv), 0), 0)");
+        // ecpm = (成本+收入)*1000/展示，仅当 spend>0（分母与日报表及本类导出口径一致用 show_pv）
+        SORTABLE_FIELDS.put("ecpm", "CASE WHEN SUM(hour1.spend) > 0 THEN IFNULL((SUM(hour1.spend) + SUM(hour1.income)) * 1000 / NULLIF(SUM(hour1.show_pv), 0), 0) ELSE 0 END");
+        // 媒体ecpm = 成本*1000/展示，仅当 spend>0
+        SORTABLE_FIELDS.put("mediaEcpm", "CASE WHEN SUM(hour1.spend) > 0 THEN IFNULL(SUM(hour1.spend) * 1000 / NULLIF(SUM(hour1.show_pv), 0), 0) ELSE 0 END");
+        // ecprm = (成本+收入)*1000000/请求，仅当 spend>0
+        SORTABLE_FIELDS.put("ecprm", "CASE WHEN SUM(hour1.spend) > 0 THEN IFNULL((SUM(hour1.spend) + SUM(hour1.income)) * 1000000 / NULLIF(SUM(hour1.req_pv), 0), 0) ELSE 0 END");
+        // 媒体ecprm = 成本*1000000/请求，仅当 spend>0
+        SORTABLE_FIELDS.put("mediaEcprm", "CASE WHEN SUM(hour1.spend) > 0 THEN IFNULL(SUM(hour1.spend) * 1000000 / NULLIF(SUM(hour1.req_pv), 0), 0) ELSE 0 END");
+    }
+
+    /**
+     * 构建动态排序字段（白名单版）：
+     * 前端通过 buildSortingField 发送 sortingFields[0].field / sortingFields[0].order
+     * 排序键必须在 SORTABLE_FIELDS 白名单内，命中返回对应 ORDER BY 表达式，未命中回退默认排序；
+     * 表达式全部为后端常量，杜绝 SQL 注入
+     */
+    private String buildSortField(List<SortingField> sortingFields) {
+        String defaultSort = "hour1.date DESC";
+        if (sortingFields == null || sortingFields.isEmpty()) {
+            return defaultSort;
+        }
+        SortingField sf = sortingFields.get(0);
+        if (sf == null || sf.getField() == null || sf.getField().isEmpty()) {
+            return defaultSort;
+        }
+        String expression = SORTABLE_FIELDS.get(sf.getField());
+        if (expression == null) {
+            return defaultSort;
+        }
+        boolean asc = SortingField.ORDER_ASC.equalsIgnoreCase(sf.getOrder());
+        return expression + (asc ? " ASC" : " DESC");
     }
 
     @Override
@@ -376,6 +450,7 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
                     .hour(hourValue)
                     .reqPv(reqCount)
                     .retPv(retPv)
+                    .retDiscard(hour.getRetDiscard())
                     .showPv(showPv)
                     .clickPv(clickPv)
                     .spend(spend)

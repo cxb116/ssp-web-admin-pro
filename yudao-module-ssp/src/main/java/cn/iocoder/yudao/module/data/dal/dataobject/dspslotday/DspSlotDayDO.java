@@ -71,6 +71,11 @@ public class DspSlotDayDO extends BaseDO {
      * 丢弃请求
      */
     private Long discard;
+
+    /**
+     * 响应超时丢弃（响应过滤：超时/未送达）
+     */
+    private Long retDiscard;
     /**
      * 返回PV
      */

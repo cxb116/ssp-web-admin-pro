@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.module.domain.dal.mysql.domaininfo.DomainInfoMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+    <!-- 一个 dsp_slot_id 只展示一条：按 dsp_slot_id 分组的公共过滤条件 -->
+    <sql id="dspSlotGroupWhere">
+        WHERE deleted = 0
+          AND dsp_slot_id IS NOT NULL
+        <if test="reqVO.dspSlotId != null">
+            AND dsp_slot_id = #{reqVO.dspSlotId}
+        </if>
+        <if test="reqVO.dspCompanyName != null and reqVO.dspCompanyName != ''">
+            AND dsp_slot_id IN (
+                SELECT dsp.id
+                FROM dsp_slot_info dsp
+                INNER JOIN dsp_company com ON com.id = dsp.company_id
+                WHERE com.name = #{reqVO.dspCompanyName}
+            )
+        </if>
+        <if test="reqVO.sspSlotId != null">
+            AND ssp_slot_id = #{reqVO.sspSlotId}
+        </if>
+        <if test="reqVO.domains != null and reqVO.domains != ''">
+            AND domains = #{reqVO.domains}
+        </if>
+        <if test="reqVO.createTime != null and reqVO.createTime.length == 2 and reqVO.createTime[0] != null">
+            AND create_time &gt;= #{reqVO.createTime[0]}
+            AND create_time &lt;= #{reqVO.createTime[1]}
+        </if>
+    </sql>
+
+    <select id="selectDspSlotGroupCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT dsp_slot_id)
+        FROM dsp_domain_info
+        <include refid="dspSlotGroupWhere"/>
+    </select>
+
+    <!--
+        按 dsp_slot_id 分组分页。
+        orderByReqPv 非 null 时 LEFT JOIN 当天请求PV汇总（data_dsp_slot_day，日期左闭右开，兼容 yyyyMMdd/yyyyMMddHH）并按其排序，
+        无当天数据的组记 0；默认按组内最大 id 倒序（与旧逻辑一致）。
+        orderByReqPv 只允许 ASC/DESC，由 Service 白名单传入，不存在注入风险。
+        【性能】PV 聚合 JOIN 仅在按 PV 排序时执行：默认排序用不到它（列表展示的
+        todayReqPv 由 Service 里 selectReqPvSumByDspSlotIds 按 dsp_slot_id IN 小范围回填），
+        无条件 JOIN 会让每次翻页都白跑一遍统计大表的全量聚合。
+    -->
+    <select id="selectDspSlotGroupPage" resultType="java.lang.Long">
+        SELECT g.dsp_slot_id
+        FROM (
+            SELECT dsp_slot_id, MAX(id) AS max_id
+            FROM dsp_domain_info
+            <include refid="dspSlotGroupWhere"/>
+            GROUP BY dsp_slot_id
+        ) g
+        <if test="orderByReqPv != null">
+            LEFT JOIN (
+                SELECT dsp_slot_id, SUM(IFNULL(req_pv, 0)) AS req_pv
+                FROM data_dsp_slot_day
+                WHERE deleted = 0
+                  AND date &gt;= #{dateBegin}
+                  AND date &lt; #{dateEnd}
+                GROUP BY dsp_slot_id
+            ) d ON d.dsp_slot_id = g.dsp_slot_id
+        </if>
+        <choose>
+            <when test="orderByReqPv != null">
+                ORDER BY IFNULL(d.req_pv, 0) ${orderByReqPv}, g.max_id DESC
+            </when>
+            <otherwise>
+                ORDER BY g.max_id DESC
+            </otherwise>
+        </choose>
+        <if test="limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+</mapper>

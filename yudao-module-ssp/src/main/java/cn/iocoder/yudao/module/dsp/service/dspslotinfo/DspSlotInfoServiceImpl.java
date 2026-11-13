@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import cn.iocoder.yudao.module.dsp.controller.admin.dspslotinfo.vo.*;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.dspslotinfo.DspSlotInfoDO;
 import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
@@ -140,10 +141,14 @@ public class DspSlotInfoServiceImpl implements DspSlotInfoService {
         Long offset = (pageReqVO.getPageNo() - 1L) * pageReqVO.getPageSize();
         List<DspSlotInfoDO> list = slotInfoMapper.selectPage(pageReqVO, offset, pageReqVO.getPageSize());
 
-        for (DspSlotInfoDO dspSlotInfoDO : list) {
-            List<LaunchDO> launchDOS = launchMapper.selectLaunchByDspSlotId(dspSlotInfoDO.getId());
-            dspSlotInfoDO.setLs(launchDOS.size());
-
+        // 关联广告位数按本页预算位 id 批量查询，避免逐行发 SQL（N+1；检索下拉一次取 5000 条时尤其明显）
+        if (!list.isEmpty()) {
+            Map<Long, Long> launchCountMap = launchMapper
+                    .selectLaunchDspSlotIds(convertList(list, DspSlotInfoDO::getId)).stream()
+                    .collect(Collectors.groupingBy(LaunchDO::getDspSlotId, Collectors.counting()));
+            for (DspSlotInfoDO dspSlotInfoDO : list) {
+                dspSlotInfoDO.setLs(launchCountMap.getOrDefault(dspSlotInfoDO.getId(), 0L).intValue());
+            }
         }
 
         Long total = slotInfoMapper.selectPageCount(pageReqVO);

@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.dsp.controller.admin.dspslotinfo;
 
 import cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO;
+import cn.iocoder.yudao.module.dsp.dal.dataobject.company.CompanyDO;
+import cn.iocoder.yudao.module.dsp.dal.mysql.company.CompanyMapper;
 import cn.iocoder.yudao.module.dsp.dal.mysql.dspslotinfo.DspSlotInfoMapper;
 import cn.iocoder.yudao.module.dsp.dal.mysql.launch.LaunchMapper;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +44,33 @@ public class DspSlotInfoController {
     private DspSlotInfoService slotInfoService;
     @Resource
     private LaunchMapper launchMapper;
+    @Resource
+    private CompanyMapper companyMapper;
+
+    /**
+     * 回填公司名称：DO 只有 companyId，RespVO.companyName 需按公司 ID 批量关联 dsp/company 查询
+     */
+    private void fillCompanyName(List<DspSlotInfoRespVO> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        Set<Long> companyIds = new HashSet<>();
+        for (DspSlotInfoRespVO vo : list) {
+            if (vo.getCompanyId() != null) {
+                companyIds.add(vo.getCompanyId());
+            }
+        }
+        if (companyIds.isEmpty()) {
+            return;
+        }
+        Map<Long, String> nameMap = new HashMap<>();
+        for (CompanyDO company : companyMapper.selectBatchIds(companyIds)) {
+            nameMap.put(company.getId(), company.getName());
+        }
+        for (DspSlotInfoRespVO vo : list) {
+            vo.setCompanyName(nameMap.get(vo.getCompanyId()));
+        }
+    }
 
 
     @PostMapping("/create")
@@ -91,7 +120,9 @@ public class DspSlotInfoController {
     @PreAuthorize("@ss.hasPermission('dsp:slot-info:query')")
     public CommonResult<PageResult<DspSlotInfoRespVO>> getSlotInfoPage(@Valid DspSlotInfoPageReqVO pageReqVO) {
         PageResult<DspSlotInfoDO> pageResult = slotInfoService.getSlotInfoPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class));
+        PageResult<DspSlotInfoRespVO> respPage = BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class);
+        fillCompanyName(respPage.getList());
+        return success(respPage);
     }
 
     // 媒体绑定预算的界面
@@ -107,7 +138,9 @@ public class DspSlotInfoController {
             }
         });
 
-        return success(BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class));
+        PageResult<DspSlotInfoRespVO> respPage = BeanUtils.toBean(pageResult, DspSlotInfoRespVO.class);
+        fillCompanyName(respPage.getList());
+        return success(respPage);
     }
 
 
@@ -119,9 +152,10 @@ public class DspSlotInfoController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(1000);
         List<DspSlotInfoDO> list = slotInfoService.getSlotInfoPage(pageReqVO).getList();
+        List<DspSlotInfoRespVO> respList = BeanUtils.toBean(list, DspSlotInfoRespVO.class);
+        fillCompanyName(respList);
         // 导出 Excel
-        ExcelUtils.write(response, "预算广告位.xls", "数据", DspSlotInfoRespVO.class,
-                        BeanUtils.toBean(list, DspSlotInfoRespVO.class));
+        ExcelUtils.write(response, "预算广告位.xls", "数据", DspSlotInfoRespVO.class, respList);
     }
 
 }

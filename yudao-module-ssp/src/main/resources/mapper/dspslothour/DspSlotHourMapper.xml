@@ -14,6 +14,7 @@
         SUM(hour1.click_pv) AS click_pv,
         SUM(hour1.req_pv) AS req_pv,
         SUM(hour1.discard) AS discard,
+        SUM(hour1.ret_discard) AS ret_discard,
         SUM(hour1.ret_pv) AS ret_pv,
         SUM(hour1.spend) AS spend,
         SUM(hour1.income) AS income,
@@ -89,7 +90,10 @@
         GROUP BY
         hour1.dsp_slot_id,
         hour1.date
+        <!-- 旧版固定排序，已改为动态排序（sortField 由 Service 白名单构建，含填充率等计算列表达式）
         ORDER BY hour1.date DESC
+        -->
+        ORDER BY ${sortField}
     </select>
 
     <!--
@@ -101,6 +105,7 @@
             MOD(hour1.date, 100) AS date,
             SUM(hour1.req_pv) AS req_pv,
             SUM(hour1.ret_pv) AS ret_pv,
+            SUM(hour1.ret_discard) AS ret_discard,
             SUM(hour1.show_pv) AS show_pv,
             SUM(hour1.click_pv) AS click_pv,
             SUM(hour1.spend) AS spend,

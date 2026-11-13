@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.data.service.inputexec;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
 import cn.iocoder.yudao.module.data.dal.dataobject.dspslotday.DspSlotDayDO;
 import cn.iocoder.yudao.module.data.dal.mysql.dspslotday.DspSlotDayMapper;
 import cn.iocoder.yudao.module.data.dal.mysql.sspslotday.SspSlotDayMapper;
@@ -11,6 +13,7 @@ import cn.iocoder.yudao.module.ssp.dal.mysql.sspSlotInfo.SspSlotInfoMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
@@ -207,149 +210,45 @@ public class InputExecServiceImpl implements InputExecService {
         }
          return dspSlotInfoInputRespVo;
 
-
-
-
-//        // 鎶ヨ〃鏁寸悊闆嗗悎瀵硅薄
-//
-//        // 1 灏嗗鍏ョ殑鏁版嵁锛屾寜鐓spSlotCode 鍒嗘垚鍑犲垎
-//        List<ListInputExecArr> listInputExecArr = new ArrayList<>();
-//        Map<String, List<InputExecTemplateVO>> groupMap = new LinkedHashMap<>();
-//        for (InputExecTemplateVO vo : list) {
-//            String key = vo.getDspSlotCode();
-//            groupMap.computeIfAbsent(key, k -> new ArrayList<>()).add(vo);
-//        }
-//        for (Map.Entry<String, List<InputExecTemplateVO>> entry : groupMap.entrySet()) {
-//            ListInputExecArr arr = new ListInputExecArr();
-//            arr.setDspSlotCode(entry.getKey());
-//            if (entry.getValue().get(0).getSpend() == 0) {
-//             continue;
-//            }
-//            arr.setSpend(entry.getValue().get(0).getSpend() * 100);
-//            arr.setListInputExecTemplateVO(entry.getValue());
-//            listInputExecArr.add(arr);
-//        }
-//        // 閬嶅巻鏀堕泦鐨勯泦鍚?//
-//       for (ListInputExecArr arr : listInputExecArr) {
-//           String dspSlotCode = arr.getDspSlotCode();
-//           if (arr.getSpend() == 0) {
-//               continue;  // 鎺掗櫎鏀剁泭鏄?鐨勬暟鎹?//           }
-//           // 閬嶅巻濯掍綋鏁版嵁
-//           // 1 鑾峰彇鎵€鏈夌殑鏇濆厜娆℃暟
-//           // 2 绠楀嚭姣忎釜濯掍綋鐨勬洕鍏夊崰姣?//           // 3 灏嗘敹鐩婂垎鍑?//           // 4 鍏ュ簱
-//           Long sumShow = 0L;
-//           for (InputExecTemplateVO listInputExec : arr.getListInputExecTemplateVO()) {
-//
-//               Long sspSlotId = listInputExec.getSspSlotId();
-//               String inputTime = listInputExec.getInputTime();
-//               LocalDate localDate = LocalDate.parse(inputTime);
-//               String inputTimeResult = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-//
-//               SspSlotDayDO sspSlotDayDO = sspSlotDayMapper.selectSspSlotId(sspSlotId,dspSlotCode, inputTimeResult);
-//               System.out.println(sspSlotDayDO);
-//               listInputExec.setShow(sspSlotDayDO.getShowPv());
-//               sumShow += sspSlotDayDO.getShowPv();
-//           }
-//            System.out.println("== sumShow = " + sumShow);
-//           for (InputExecTemplateVO listInputExec : arr.getListInputExecTemplateVO()) {
-//              if (listInputExec.getShow() == 0) {
-//                  listInputExec.setPercentage(0.0);
-//                  continue;
-//              }
-//              double Percentage = (double) listInputExec.getShow() / sumShow * 100;
-//              listInputExec.setPercentage(Percentage);
-//           }
-//
-//           for (InputExecTemplateVO listInputExec : arr.getListInputExecTemplateVO()) {
-//
-//               Long sspSlotId = listInputExec.getSspSlotId();
-//               String inputTime = listInputExec.getInputTime();
-//               if (listInputExec.getShow() == 0 || listInputExec.getPercentage()== 0) {
-//                   continue;
-//               }
-//               // 杩欎釜鏄垜鏂圭殑鏀剁泭 =  閲戦 X 鏇濆厜姣斾緥 / 100
-//               Long spend = (long) (arr.getSpend() * listInputExec.getPercentage() / 100);
-//               if (spend == 0) {
-//                   continue;
-//               }
-//               Long income = (long) (spend * listInputExec.getSettleRate() / 100);
-//               SspSlotDayDO sspSlotDayDO = new SspSlotDayDO();
-//               sspSlotDayDO.setSspSlotId(sspSlotId);
-//               sspSlotDayDO.setDspSlotCode(dspSlotCode);
-//               // inputTime 鏍煎紡 "2026-10-10" 鈫?杞负 20261010
-//               String dateStr = listInputExec.getInputTime().replace("-", "");
-//               sspSlotDayDO.setDate(Long.valueOf(dateStr));
-//               sspSlotDayDO.setIncome(income);
-//               sspSlotDayDO.setSpend(spend);
-//               sspSlotDayMapper.updateSspSlotDay(sspSlotDayDO);
-//               // 淇敼dspSlotDayMapper
-//               DspSlotDayDO dspSlotDayDO = new DspSlotDayDO();
-//               dspSlotDayDO.setSspSlotId(sspSlotId);
-//               dspSlotDayDO.setDspSlotCode(dspSlotCode);
-//               dspSlotDayDO.setDate(Long.valueOf(dateStr));
-//               dspSlotDayDO.setIncome(income);
-//               dspSlotDayDO.setSpend(spend);
-//               dspSlotDayMapper.updateSsspSlotDay(dspSlotDayDO);
-//           }
-////           InputExecDO inputExecDO = new InputExecDO();
-////           inputExecDO.setId(arr.getListInputExecTemplateVO().get(0).getId());
-////           // inputTime 鏍煎紡 "2026-10-10" 鈫?杞负 20261010
-////           inputExecDO.setInputTime(arr.getListInputExecTemplateVO().get(0).getInputTime());
-////           inputExecDO.setUpdateTime(LocalDateTime.now());
-////           inputExecMapper.updateInputExec(inputExecDO);
-//       }
-//        return "瀵煎叆鎴愬姛";
-
-        // 鐒跺悗閫愪釜鍘昏绠楀鍏ユ敹鐩?
-
-//        int successCount = 0;
-//        int failCount = 0;
-//        for (InputExecTemplateVO vo : list) {
-//            try {
-//                InputExecDO exec = new InputExecDO();
-//                exec.setCompanyId(companyId);
-//                exec.setTables(1L);
-//                exec.setInputTime(null);
-//                exec.setSspSlotId(vo.getSspSlotId());
-//                exec.setDspSlotCode(vo.getDspSlotCode());
-//                exec.setMediaCompany(vo.getMediaCompany());
-//                inputExecMapper.insert(exec);
-//                successCount++;
-//            } catch (Exception e) {
-//                failCount++;
-//            }
-//        }
-//        return "瀵煎叆瀹屾垚锛屾垚鍔?" + successCount + " 鏉★紝澶辫触 " + failCount + " 鏉?;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String updateInputIncomeData(List<InputIncomeReqVO> inputIncomeReqVOList) {
-
-//        inputExecMapper.selectDspSlotCodeDate()
-        Long inputIncomeId = 0L;
-        InputExecDO inputExecDO = null;
-        if (inputIncomeReqVOList.size() > 0) {
-            InputIncomeReqVO inputIncomeReqVO1 = inputIncomeReqVOList.get(0);
-            inputIncomeId = inputIncomeReqVO1.getId();
-            inputExecDO = inputExecMapper.selectInputExecId(inputIncomeId);
+        // 收益为 0 的行在下方被跳过；若提交列表本身为空（全部为 0 或未提交），视为无需处理，直接成功返回
+        if (inputIncomeReqVOList == null || inputIncomeReqVOList.isEmpty()) {
+            return "收益保存成功";
+        }
+        Long inputIncomeId = inputIncomeReqVOList.get(0).getId();
+        InputExecDO inputExecDO = inputExecMapper.selectInputExecId(inputIncomeId);
+        if (inputExecDO == null) {
+            throw ServiceExceptionUtil.exception0(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR.getCode(),
+                    "收益保存失败：导入批次不存在（id=" + inputIncomeId + "）");
         }
 
         Long inputSize = 0L; // 导入条数
 
-        if (inputIncomeReqVOList == null || inputIncomeReqVOList.isEmpty()) {
-            return "收益保存失败";
-        }
+        // Excel 中允许存在收益为 0 的行：这些行跳过、不参与更新，避免因匹配不到数据导致整体保存失败
+        List<InputIncomeReqVO> rowsToUpdate = new ArrayList<>();
         for (InputIncomeReqVO inputIncomeReqVO : inputIncomeReqVOList) {
-            int i = dspSlotDayMapper.updateDspSlotDaySpendAndIncome(inputIncomeReqVO);
-            if (i > 0) {
-                int i1 = sspSlotDayMapper.updateSspSlotDaySpendAndIncome(inputIncomeReqVO);
-                inputSize++;
-                if (i1 == 0) {
-                    return "收益保存失败";
-                }
-            } else {
-                return "收益保存失败";
+            if (inputIncomeReqVO.getProfit() != null && inputIncomeReqVO.getProfit().signum() != 0) {
+                rowsToUpdate.add(inputIncomeReqVO);
             }
+        }
+        for (InputIncomeReqVO inputIncomeReqVO : rowsToUpdate) {
+            int i = dspSlotDayMapper.updateDspSlotDaySpendAndIncome(inputIncomeReqVO);
+            if (i <= 0) {
+                throw ServiceExceptionUtil.exception0(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR.getCode(),
+                        "收益保存失败：预算广告位日报表未匹配到数据行（" + inputIncomeReqVO.getDspSlotCode()
+                                + "，日期 " + inputIncomeReqVO.getDate() + "）");
+            }
+            int i1 = sspSlotDayMapper.updateSspSlotDaySpendAndIncome(inputIncomeReqVO);
+            if (i1 <= 0) {
+                throw ServiceExceptionUtil.exception0(GlobalErrorCodeConstants.INTERNAL_SERVER_ERROR.getCode(),
+                        "收益保存失败：媒体广告位日报表未匹配到数据行（" + inputIncomeReqVO.getDspSlotCode()
+                                + "，日期 " + inputIncomeReqVO.getDate() + "）");
+            }
+            inputSize++;
         }
         inputExecDO.setId(inputIncomeId);
         inputExecDO.setTables(inputSize);

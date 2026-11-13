@@ -24,6 +24,7 @@
             SUM(day1.click_pv) AS click_pv,
             SUM(day1.req_pv) AS req_pv,
             SUM(day1.discard) AS discard,
+            SUM(day1.ret_discard) AS ret_discard,
             SUM(day1.ret_pv) AS ret_pv,
             SUM(day1.spend) AS spend,
             SUM(day1.income) AS income,
@@ -39,7 +40,7 @@
 
     <select id="getSspSlotDaySumByCondition" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
         SELECT SUM(day.show_pv) show_pv, SUM(day.click_pv) click_pv, SUM(day.req_count) req_pv,
-               SUM(day.discard) discard, SUM(day.ret_pv) ret_pv, SUM(day.spend) spend, SUM(day.income) income,
+               SUM(day.discard) discard, SUM(day.ret_discard) ret_discard, SUM(day.ret_pv) ret_pv, SUM(day.spend) spend, SUM(day.income) income,
                SUM(day.discount_click_pv) discount_click_pv, SUM(day.discount_show_pv) discount_show_pv,
                SUM(day.dplsucc_pv) dplsucc_pv, SUM(day.complete_pv) complete_pv,
                SUM(day.install_pv) install_pv, SUM(day.activate_pv) activate_pv
@@ -68,6 +69,7 @@
              SUM(day.click_pv) AS click_pv,
              SUM(day.req_count) AS req_pv,
              SUM(day.discard) AS discard,
+             SUM(day.ret_discard) AS ret_discard,
              SUM(day.ret_pv) AS ret_pv,
             SUM(day.spend) AS spend,
             SUM(day.income) AS income,
@@ -132,7 +134,10 @@
         day.ssp_slot_id,
         day.date
 
+        <!-- 旧版固定排序，已改为动态排序（sortField 由 Service 白名单构建，含填充率等计算列表达式）
         ORDER BY day.date DESC
+        -->
+        ORDER BY ${sortField}
     </select>
 
     <!--
@@ -143,6 +148,7 @@
             day.date AS date,
             SUM(day.req_count) AS req_pv,
             SUM(day.ret_pv) AS ret_pv,
+            SUM(day.ret_discard) AS ret_discard,
             SUM(day.show_pv) AS show_pv,
             SUM(day.click_pv) AS click_pv,
             SUM(day.spend) AS spend,
@@ -218,6 +224,17 @@
           AND day.date = #{time}
     </select>
 
+    <!--    批量查询各广告位当天请求次数明细（汇总由调用方完成，避免逐条 SUM）-->
+    <select id="selectRequestCountBySspSlotIds" resultType="cn.iocoder.yudao.module.data.dal.dataobject.sspslotday.SspSlotDayDO">
+        SELECT day.ssp_slot_id AS sspSlotId, day.req_count AS reqCount
+        FROM data_ssp_slot_day AS day
+        WHERE day.date = #{time}
+          AND day.ssp_slot_id IN
+        <foreach collection="sspSlotIds" item="sid" open="(" separator="," close=")">
+            #{sid}
+        </foreach>
+    </select>
+
     <!--
         根据 dspSlotId 查询
     -->
@@ -265,7 +282,7 @@
         SELECT media.id AS mediaId, media.media_company_name AS mediaName,
                SUM(day.show_pv) AS showPv, SUM(day.click_pv) AS clickPv,
                SUM(day.req_pv) AS reqPv, SUM(day.req_count) AS reqCount,
-               SUM(day.discard) AS discard, SUM(day.ret_pv) AS retPv,
+               SUM(day.discard) AS discard, SUM(day.ret_discard) AS ret_discard, SUM(day.ret_pv) AS retPv,
                SUM(day.spend) AS spend, SUM(day.income) AS income,
                SUM(day.discount_click_pv) AS discountClickPv, SUM(day.discount_show_pv) AS discountShowPv,
                SUM(day.dplsucc_pv) AS dplsuccPv, SUM(day.complete_pv) AS completePv,

@@ -17,6 +17,7 @@
         SUM(h.click_pv) AS click_pv,
         SUM(h.req_count) AS req_pv,
         SUM(h.discard) AS discard,
+        SUM(h.ret_discard) AS ret_discard,
         SUM(h.ret_pv) AS ret_pv,
         SUM(h.spend) AS spend,
         SUM(h.income) AS income,
@@ -86,7 +87,10 @@
         GROUP BY
         h.ssp_slot_id,
         h.date
+        <!-- 旧版固定排序，已改为动态排序（sortField 由 Service 白名单构建，含填充率等计算列表达式）
         ORDER BY h.date DESC
+        -->
+        ORDER BY ${sortField}
     </select>
 
     <!--
@@ -98,6 +102,7 @@
             MOD(h.date, 100) AS date,
             SUM(h.req_count) AS req_pv,
             SUM(h.ret_pv) AS ret_pv,
+            SUM(h.ret_discard) AS ret_discard,
             SUM(h.show_pv) AS show_pv,
             SUM(h.click_pv) AS click_pv,
             SUM(h.spend) AS spend,

@@ -31,6 +31,18 @@
         ORDER BY launch.id DESC
     </select>
 
+    <!--
+        批量查询 Launch 绑定关系（仅取 ssp_slot_id 列，条数由调用方统计）
+    -->
+    <select id="selectLaunchSspSlotIds" resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO">
+        SELECT launch.ssp_slot_id
+        FROM dsp_launch AS launch
+        WHERE launch.ssp_slot_id IN
+        <foreach collection="sspSlotIds" item="sid" open="(" separator="," close=")">
+            #{sid}
+        </foreach>
+    </select>
+
     <select id="selectLaunchBySspSlotIdDspSlotId" resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO">
         SELECT launch.*
         FROM dsp_launch AS launch
@@ -45,6 +57,18 @@
         FROM dsp_launch AS launch
         WHERE launch.dsp_slot_id = #{dspSlotId}
         ORDER BY launch.id DESC
+    </select>
+
+    <!--
+        批量查询 Launch 绑定关系（仅取 dsp_slot_id 列，条数由调用方统计）
+    -->
+    <select id="selectLaunchDspSlotIds" resultType="cn.iocoder.yudao.module.dsp.dal.dataobject.launch.LaunchDO">
+        SELECT launch.dsp_slot_id
+        FROM dsp_launch AS launch
+        WHERE launch.dsp_slot_id IN
+        <foreach collection="dspSlotIds" item="did" open="(" separator="," close=")">
+            #{did}
+        </foreach>
     </select>
 
     <!--

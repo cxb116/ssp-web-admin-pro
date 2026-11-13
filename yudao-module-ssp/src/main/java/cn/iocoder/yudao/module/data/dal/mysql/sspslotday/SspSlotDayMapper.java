@@ -23,8 +23,9 @@ public interface SspSlotDayMapper extends BaseMapperX<SspSlotDayDO> {
 
     /**
      * 分页查询
+     * @param sortField 动态排序字段（由 Service 白名单构建，含计算列表达式）
      */
-    Page<SspSlotDayDO> selectSspSlotDayPage(Page<SspSlotDayDO> page, @Param("reqVO") SspSlotDayPageReqVO reqVO);
+    Page<SspSlotDayDO> selectSspSlotDayPage(Page<SspSlotDayDO> page, @Param("reqVO") SspSlotDayPageReqVO reqVO, @Param("sortField") String sortField);
 
     /**
      * 日报表折线图：按天聚合
@@ -51,6 +52,11 @@ public interface SspSlotDayMapper extends BaseMapperX<SspSlotDayDO> {
     void updateSspSlotDay(SspSlotDayDO sspSlotDayDO);
 
     SspSlotDayDO selectRequestCount(@Param("sspSlotId")Long sspSlotId,@Param("time") String time);
+
+    /**
+     * 批量查询各广告位当天的请求数明细（同一广告位可能有多行，由调用方按 sspSlotId 汇总，避免逐条查询）
+     */
+    List<SspSlotDayDO> selectRequestCountBySspSlotIds(@Param("sspSlotIds") Collection<Long> sspSlotIds, @Param("time") String time);
 
     List<SspSlotDayDO> selectMediaCompanySum(@Param("date") Long date);
 

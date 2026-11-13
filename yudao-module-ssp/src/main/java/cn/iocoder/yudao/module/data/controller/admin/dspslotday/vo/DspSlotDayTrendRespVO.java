@@ -31,6 +31,9 @@ public class DspSlotDayTrendRespVO {
     @Schema(description = "返回PV")
     private Long retPv;
 
+    @Schema(description = "响应超时丢弃")
+    private Long retDiscard;
+
     @Schema(description = "展示PV")
     private Long showPv;
 

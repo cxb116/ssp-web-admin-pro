@@ -66,6 +66,10 @@ public class SspSlotDayRespVO {
     @ExcelProperty("丢弃请求")
     private Long discard;
 
+    @Schema(description = "响应超时丢弃")
+    @ExcelProperty("响应超时丢弃")
+    private Long retDiscard;
+
     @Schema(description = "返回PV")
     @ExcelProperty("返回PV")
     private Long retPv;
@@ -116,11 +120,11 @@ public class SspSlotDayRespVO {
     private Double clickRate;
 
     @Schema(description = "折后点击")
-    @ExcelProperty("折后点击")
+//    @ExcelProperty("折后点击")
     private Long discountClickPv;
 
     @Schema(description = "折后展示")
-    @ExcelProperty("折后展示")
+//    @ExcelProperty("折后展示")
     private Long discountShowPv;
 
     @Schema(description = "调起成功")

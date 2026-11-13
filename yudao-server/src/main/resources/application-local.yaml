@@ -8,8 +8,6 @@ spring:
     exclude:
       - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure # 排除 Druid 的自动配置，使用 dynamic-datasource-spring-boot-starter 配置多数据源
       - org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration # 默认 local 环境，不开启 Quartz 的自动配置
-      - org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStoreAutoConfiguration # 禁用 AI 模块的 Qdrant，手动创建
-      - org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration # 禁用 AI 模块的 Milvus，手动创建
   # 数据源配置项
   datasource:
     druid: # Druid 【监控】相关的全局配置
@@ -51,7 +49,14 @@ spring:
 #          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #          username: root
 #          password: 846402869cbb@gmail.com
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+
+#
+#           huanxi
+          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          username: root
+          password: 846402869@abcdefg!
+
+#          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #                    url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true # MySQL Connector/J 5.X 连接的示例
 #                    url: jdbc:postgresql://127.0.0.1:5432/ruoyi-vue-pro # PostgreSQL 连接的示例
 #                    url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
@@ -59,8 +64,8 @@ spring:
           #          url: jdbc:dm://127.0.0.1:5236?schema=RUOYI_VUE_PRO # DM 连接的示例
           #          url: jdbc:kingbase8://127.0.0.1:54321/test  # 人大金仓 KingbaseES 连接的示例
 #                    url: jdbc:postgresql://127.0.0.1:5432/postgres # OpenGauss 连接的示例
-          username: root
-          password: root
+#          username: root
+#          password: root
           #          username: sa # SQL Server 连接的示例
           #          password: Yudao@2024 # SQL Server 连接的示例
           #          username: SYSDBA # DM 连接的示例
@@ -69,30 +74,44 @@ spring:
           #          password: Yudao@2024 # OpenGauss 连接的示例
         slave: # 模拟从库，可根据自己需要修改
           lazy: true # 开启懒加载，保证启动速度
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-          username: root
-          password: root
+#          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+#          username: root
+#          password: root
+
 #          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #          username: root
 #          password: 846402869cbb@gmail.com
-#        tdengine: # IoT 数据库（需要 IoT 物联网再开启噢！）
-#          lazy: true # 开启懒加载，保证启动速度
-#          url: jdbc:TAOS-WS://127.0.0.1:6041/ruoyi_vue_pro?varcharAsString=true
-#          driver-class-name: com.taosdata.jdbc.ws.WebSocketDriver
-#          username: root
-#          password: taosdata
-#          druid:
-#            validation-query: SELECT SERVER_STATUS() # TDengine 数据源的有效性检查 SQL
+
+          # huanxi
+          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          username: root
+          password: 846402869@abcdefg!
+
+
+
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
+
+
   redis:
 #    host: redis-cnlft5iawyx9dkfiz.redis.ivolces.com # 地址
-    host: 127.0.0.1
-    port: 6379 # 端口
-    database: 0 # 数据库索引
+##    host: 127.0.0.1
+#    port: 6379 # 端口
+#    database: 0 # 数据库索引
 #    password: Q8@xL3#vP9!mK21rT7&zN5wH1%fY41cJ # 密码，建议生产环境开启
 #    username: default
 
+    #huanxi
+#  redis:
+    host: redis-cnlfaugy3owxssfhw.redis.ivolces.com # 地址
+#        host: 127.0.0.1
+    port: 6379 # 端口
+    database: 0 # 数据库索引
+    password: 846402869@abcdefg!jiangzeqian#1099 # 密码，建议生产环境开启
+    username: default
+
+
+#
 #    password: dev # 密码，建议生产环境开启
 
 --- #################### 定时任务相关配置 ####################
@@ -125,23 +144,6 @@ spring:
             class: org.quartz.simpl.SimpleThreadPool # 线程池类型
     jdbc: # 使用 JDBC 的 JobStore 的时候，JDBC 的配置
       initialize-schema: NEVER # 是否自动使用 SQL 初始化 Quartz 表结构。这里设置成 never ，我们手动创建表结构。
-
---- #################### 消息队列相关 ####################
-
-# rocketmq 配置项，对应 RocketMQProperties 配置类
-rocketmq:
-  name-server: 127.0.0.1:9876 # RocketMQ Namesrv
-
-spring:
-  # RabbitMQ 配置项，对应 RabbitProperties 配置类
-  rabbitmq:
-    host: 127.0.0.1 # RabbitMQ 服务的地址
-    port: 5672 # RabbitMQ 服务的端口
-    username: rabbit # RabbitMQ 服务的账号
-    password: rabbit # RabbitMQ 服务的密码
-  # Kafka 配置项，对应 KafkaProperties 配置类
-  kafka:
-    bootstrap-servers: 127.0.0.1:9092 # 指定 Kafka Broker 地址，可以设置多个，以逗号分隔
 
 --- #################### 服务保障相关配置 ####################
 
@@ -182,28 +184,13 @@ logging:
     name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
   level:
     # 配置自己写的 MyBatis Mapper 打印日志
-    cn.iocoder.yudao.module.bpm.dal.mysql: debug
     cn.iocoder.yudao.module.infra.dal.mysql: debug
     cn.iocoder.yudao.module.infra.dal.mysql.logger.ApiErrorLogMapper: INFO # 配置 ApiErrorLogMapper 的日志级别为 info，避免和 GlobalExceptionHandler 重复打印
     cn.iocoder.yudao.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
     cn.iocoder.yudao.module.infra.dal.mysql.file.FileConfigMapper: INFO # 配置 FileConfigMapper 的日志级别为 info
-    cn.iocoder.yudao.module.pay.dal.mysql: debug
-    cn.iocoder.yudao.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 PayNotifyTaskMapper 的日志级别为 info
     cn.iocoder.yudao.module.system.dal.mysql: debug
     cn.iocoder.yudao.module.system.dal.mysql.sms.SmsChannelMapper: INFO # 配置 SmsChannelMapper 的日志级别为 info
-    cn.iocoder.yudao.module.tool.dal.mysql: debug
     cn.iocoder.yudao.module.member.dal.mysql: debug
-    cn.iocoder.yudao.module.trade.dal.mysql: debug
-    cn.iocoder.yudao.module.promotion.dal.mysql: debug
-    cn.iocoder.yudao.module.statistics.dal.mysql: debug
-    cn.iocoder.yudao.module.crm.dal.mysql: debug
-    cn.iocoder.yudao.module.erp.dal.mysql: debug
-    cn.iocoder.yudao.module.mes.dal.mysql: debug
-    cn.iocoder.yudao.module.wms.dal.mysql: debug
-    cn.iocoder.yudao.module.iot.dal.mysql: debug
-    cn.iocoder.yudao.module.iot.dal.tdengine: DEBUG
-    cn.iocoder.yudao.module.iot.service.rule: debug
-    cn.iocoder.yudao.module.ai.dal.mysql: debug
     org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR # TODO 芋艿：先禁用，Spring Boot 3.X 存在部分错误的 WARN 提示
     # yudao-module-ssp 模块 SQL 打印（ssp / dsp / data 三个包）
     cn.iocoder.yudao.module.ssp.dal.mysql: debug
@@ -247,10 +234,6 @@ yudao:
     enable: false # 本地环境，暂时关闭图片验证码，方便登录等接口的测试；
   security:
     mock-enable: true
-  pay:
-    order-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/order # 支付渠道的【支付】回调地址
-    refund-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/refund # 支付渠道的【退款】回调地址
-    transfer-notify-url: https://yutou.mynatapp.cc/admin-api/pay/notify/transfer # 支付渠道的【转账】回调地址
   access-log: # 访问日志的配置项
     enable: false
   demo: false # 关闭演示模式
@@ -266,7 +249,10 @@ yudao:
   etcd:
     enabled: true
 #    endpoints: http://42.81.102.125:2379
-    endpoints: http://127.0.0.1:2379
+
+    # huanxi
+    endpoints:  http://42.81.9.158:2379
+    #    endpoints: http://127.0.0.1:2379
     connect-timeout: 5000
     request-timeout: 30000
     # DSP API 配置前缀
