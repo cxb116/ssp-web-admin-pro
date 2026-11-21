@@ -96,6 +96,10 @@ public class OAuth2TokenServiceImpl implements OAuth2TokenService {
             throw exception0(GlobalErrorCodeConstants.UNAUTHORIZED.getCode(), "刷新令牌已过期");
         }
 
+        // 滑动过期：每次刷新时重置刷新令牌的过期时间，实现"持续操作不掉线、一段时间无操作后需要重新登录"
+        refreshTokenDO.setExpiresTime(LocalDateTime.now().plusSeconds(clientDO.getRefreshTokenValiditySeconds()));
+        oauth2RefreshTokenMapper.updateById(refreshTokenDO);
+
         // 创建访问令牌
         return createOAuth2AccessToken(refreshTokenDO, clientDO);
     }
