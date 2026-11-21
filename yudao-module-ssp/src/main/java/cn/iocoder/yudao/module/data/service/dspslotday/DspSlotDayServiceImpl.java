@@ -379,7 +379,11 @@ public class DspSlotDayServiceImpl implements DspSlotDayService {
 
             Long reqCount = dspSlotDayDO.getReqPv();
             if (reqCount == null || reqCount == 0) {
-                return null;
+                // 无请求的行比率记 0，仅跳过本行，不影响整表返回
+                dspSlotDayDO.setFillRate(0.0);
+                dspSlotDayDO.setDisplayRate(0.0);
+                dspSlotDayDO.setClickRate(0.0);
+                continue;
             }
 
             // 填充率=返回/请求*100%
@@ -440,14 +444,15 @@ public class DspSlotDayServiceImpl implements DspSlotDayService {
             }
 
         }
-        // 查看是否解绑
+        // 查看是否解绑：一次查出该媒体广告位的全部绑定关系，避免逐行查询（N+1）；
+        // 两条 SQL 均按 dsp_launch 原表匹配（不过滤 deleted），与原逐行查询结果一致
+        Set<Long> boundDspSlotIds = new HashSet<>();
+        for (LaunchDO launchDO : launchMapper.selectLaunchBySspSlotId(sspSlotid)) {
+            boundDspSlotIds.add(launchDO.getDspSlotId());
+        }
         for (DspSlotDayDO dspSlotDayDO : sspDspSlotDay) {
-            List<LaunchDO> launchDOS = launchMapper.selectLaunchBySspSlotIdDspSlotId(sspSlotid, dspSlotDayDO.getDspSlotId());
-            if (launchDOS.size() > 0) {
-                dspSlotDayDO.setIsDeleted(1);// 没有解绑
-            } else {
-                dspSlotDayDO.setIsDeleted(2); // 解绑
-            }
+            // 1=没有解绑 2=解绑
+            dspSlotDayDO.setIsDeleted(boundDspSlotIds.contains(dspSlotDayDO.getDspSlotId()) ? 1 : 2);
         }
         return sspDspSlotDay;
     }

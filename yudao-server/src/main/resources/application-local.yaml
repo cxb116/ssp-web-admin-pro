@@ -14,11 +14,11 @@ spring:
       web-stat-filter:
         enabled: true
       stat-view-servlet:
-        enabled: true
-        allow: # 设置白名单，不填则允许所有访问
+        enabled: false # 必须关闭！此前无密码+无IP白名单，任何人可访问 /druid/ 查看全部SQL与数据源信息（生产用 local profile 运行时直接裸奔）
+        allow: 127.0.0.1 # 设置白名单（已禁用控制台，仅留作以后开启时的安全默认值）
         url-pattern: /druid/*
-        login-username: # 控制台管理用户名和密码
-        login-password:
+        login-username: druid_admin # 控制台管理用户名和密码（已禁用控制台，仅留作以后开启时的安全默认值）
+        login-password: CHANGE_ME_BEFORE_ENABLE
       filter:
         stat:
           enabled: true
@@ -52,11 +52,11 @@ spring:
 
 #
 #           huanxi
-          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-          username: root
-          password: 846402869@abcdefg!
+#          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+#          username: root
+#          password: 846402869@abcdefg!
 
-#          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://127.0.0.1:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #                    url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true # MySQL Connector/J 5.X 连接的示例
 #                    url: jdbc:postgresql://127.0.0.1:5432/ruoyi-vue-pro # PostgreSQL 连接的示例
 #                    url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
@@ -64,8 +64,8 @@ spring:
           #          url: jdbc:dm://127.0.0.1:5236?schema=RUOYI_VUE_PRO # DM 连接的示例
           #          url: jdbc:kingbase8://127.0.0.1:54321/test  # 人大金仓 KingbaseES 连接的示例
 #                    url: jdbc:postgresql://127.0.0.1:5432/postgres # OpenGauss 连接的示例
-#          username: root
-#          password: root
+          username: root
+          password: root
           #          username: sa # SQL Server 连接的示例
           #          password: Yudao@2024 # SQL Server 连接的示例
           #          username: SYSDBA # DM 连接的示例
@@ -74,41 +74,41 @@ spring:
           #          password: Yudao@2024 # OpenGauss 连接的示例
         slave: # 模拟从库，可根据自己需要修改
           lazy: true # 开启懒加载，保证启动速度
-#          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
-#          username: root
-#          password: root
+          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          username: root
+          password: root
 
 #          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #          username: root
 #          password: 846402869cbb@gmail.com
 
           # huanxi
-          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-          username: root
-          password: 846402869@abcdefg!
+#          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+#          username: root
+#          password: 846402869@abcdefg!
 
 
 
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
 
-
+# 创汇
   redis:
 #    host: redis-cnlft5iawyx9dkfiz.redis.ivolces.com # 地址
-##    host: 127.0.0.1
-#    port: 6379 # 端口
-#    database: 0 # 数据库索引
+    host: 127.0.0.1
+    port: 6379 # 端口
+    database: 0 # 数据库索引
 #    password: Q8@xL3#vP9!mK21rT7&zN5wH1%fY41cJ # 密码，建议生产环境开启
 #    username: default
 
     #huanxi
 #  redis:
-    host: redis-cnlfaugy3owxssfhw.redis.ivolces.com # 地址
-#        host: 127.0.0.1
-    port: 6379 # 端口
-    database: 0 # 数据库索引
-    password: 846402869@abcdefg!jiangzeqian#1099 # 密码，建议生产环境开启
-    username: default
+#    host: redis-cnlfaugy3owxssfhw.redis.ivolces.com # 地址
+##    host: 127.0.0.1
+#    port: 6379 # 端口
+#    database: 0 # 数据库索引
+#    password: 846402869@abcdefg!jiangzeqian#1099 # 密码，建议生产环境开启
+#    username: default
 
 
 #
@@ -160,7 +160,7 @@ management:
     web:
       base-path: /actuator # Actuator 提供的 API 接口的根目录。默认为 /actuator
       exposure:
-        include: '*' # 需要开放的端点。默认值只打开 health 和 info 两个端点。通过设置 * ，可以开放所有端点。
+        include: 'health,info' # 此前为 '*' 全量开放：env 会泄露数据库/Redis密码明文，heapdump 可抠出token，任何低权限账号都可访问，只保留基础端点
 
 # Spring Boot Admin 配置项
 spring:
@@ -231,9 +231,9 @@ wx:
 # 芋道配置项，设置当前项目所有自定义的配置
 yudao:
   captcha:
-    enable: false # 本地环境，暂时关闭图片验证码，方便登录等接口的测试；
+    enable: true # 开启图片验证码（生产环境用 local profile 运行，此前 false 会覆盖 application.yaml 的 true，等于没开）
   security:
-    mock-enable: true
+    mock-enable: false # 必须关闭！开启后任何人可用默认密钥 test+用户ID 冒充任意用户（TokenAuthenticationFilter mockLoginUser）
   access-log: # 访问日志的配置项
     enable: false
   demo: false # 关闭演示模式
@@ -251,9 +251,20 @@ yudao:
 #    endpoints: http://42.81.102.125:2379
 
     # huanxi
-    endpoints:  http://42.81.9.158:2379
-    #    endpoints: http://127.0.0.1:2379
+#    endpoints:  http://42.81.9.158:2379
+    endpoints: http://127.0.0.1:2379
     connect-timeout: 5000
+
+--- #################### SSP 媒体 SSO 配置 ####################
+
+ssp:
+  # 【安全】媒体 SSO 票据签名密钥（HS512，≥64 字节）。
+  # 当前未配置时用的是源码里的硬编码默认值（开源代码人人可见），可被用于伪造票据、
+  # 以任意媒体账号身份登录媒体子后台！
+  # 启用步骤：① 生成 ≥64 字节随机串填到下面 ② 取消注释
+  #           ③【必须】同步修改媒体后台（MEDIA-ADMIN）的 jwt.secret 为同一个值，
+  #              两边一起部署，否则 SSO 跳转会失败！
+  # sso-secret: 在这里填生成的强随机密钥
     request-timeout: 30000
     # DSP API 配置前缀
     dsp:

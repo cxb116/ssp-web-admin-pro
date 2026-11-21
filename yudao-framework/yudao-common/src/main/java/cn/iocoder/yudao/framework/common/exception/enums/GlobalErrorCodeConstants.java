@@ -93,4 +93,8 @@ public interface GlobalErrorCodeConstants {
     ErrorCode DOMAIN_NOT_COMPANY_NOT_EXISTS = new ErrorCode(2500, "DSP域名公司列不存在");
 
     ErrorCode DOMAIN_COMPANY_DOMAIN_EXISTS = new ErrorCode(2600, "该域名已存在，请勿重复添加");
+
+    ErrorCode SLOT_BLACKLIST_NOT_EXISTS = new ErrorCode(2700, "黑名单配置不存在");
+
+    ErrorCode SLOT_BLACKLIST_DOMAIN_NOT_EXISTS = new ErrorCode(2700, "黑名单统计不存在");
 }

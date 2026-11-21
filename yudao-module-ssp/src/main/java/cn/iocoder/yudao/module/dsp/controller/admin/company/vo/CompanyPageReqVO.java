@@ -13,6 +13,9 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @Data
 public class CompanyPageReqVO extends PageParam {
 
+    @Schema(description = "ID 列表，批量查询", example = "1,2,3")
+    private List<Long> id;
+
     @Schema(description = "公司名称", example = "张三")
     private String name;
 

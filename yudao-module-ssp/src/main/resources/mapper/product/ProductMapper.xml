@@ -26,6 +26,12 @@
             LEFT JOIN dsp_company as c
                 ON c.id = p.company_id
         <where>
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND p.id IN
+                <foreach collection="reqVO.id" item="idItem" open="(" separator="," close=")">
+                    #{idItem}
+                </foreach>
+            </if>
             <if test="reqVO.name != null and reqVO.name != ''">
                 AND p.name LIKE CONCAT('%', #{reqVO.name}, '%')
             </if>
@@ -53,6 +59,12 @@
                 ON c.id = p.company_id
         <where>
 
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND p.id IN
+                <foreach collection="reqVO.id" item="idItem" open="(" separator="," close=")">
+                    #{idItem}
+                </foreach>
+            </if>
             <if test="reqVO.name != null and reqVO.name != ''">
                 AND p.name LIKE CONCAT('%', #{reqVO.name}, '%')
             </if>

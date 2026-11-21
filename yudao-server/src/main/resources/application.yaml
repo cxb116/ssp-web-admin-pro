@@ -32,9 +32,9 @@ spring:
   # Kafka 配置项：消费 dsp-api 捕获日志（topic log-data，各环境在 profile 覆盖 broker 地址）
   kafka:
     # huanxi
-    bootstrap-servers: kafka-cnngj2fsydmz951j.kafka.cn-beijing.ivolces.com:9092
+#    bootstrap-servers: kafka-cnngj2fsydmz951j.kafka.cn-beijing.ivolces.com:9092
 
-#    bootstrap-servers: 192.168.0.244:9092
+    bootstrap-servers: 127.0.0.1:9092
     consumer:
       group-id: ssp-capture-log-group # 消费组：捕获日志（集群多实例同组自动分摊分区）
       auto-offset-reset: latest # 首次启动从最新开始，不清算历史积压
@@ -130,7 +130,7 @@ yudao:
     version: 1.0.0
     base-package: cn.iocoder.yudao
   captcha:
-    enable: false # 关闭登录验证码校验，配合前端 VITE_APP_CAPTCHA_ENABLE=false
+    enable: true # 开启登录验证码校验，配合前端 VITE_APP_CAPTCHA_ENABLE=true
   web:
     admin-ui:
       url: http://dashboard.yudao.iocoder.cn # Admin 管理后台 UI 的地址
@@ -187,7 +187,7 @@ yudao:
     expire-times: 10m
     send-frequency: 1m
     send-maximum-quantity-per-day: 10
-    begin-code: 9999 # 这里配置 9999 的原因是，测试方便。
-    end-code: 9999 # 这里配置 9999 的原因是，测试方便。
+    begin-code: 1000 # 验证码随机区间下限（原 9999~9999 固定验证码=任何人可用 9999 登录，重大安全漏洞，已改随机）
+    end-code: 9999 # 验证码随机区间上限
 
 debug: false

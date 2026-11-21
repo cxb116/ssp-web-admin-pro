@@ -94,4 +94,16 @@ public interface NotifyMessageService {
      */
     int updateAllNotifyMessageRead(Long userId, Integer userType);
 
+    /**
+     * 按模板 + 参数维度批量标记已读（同一问题的所有告警一键已读）
+     *
+     * @param userId       用户编号
+     * @param userType     用户类型
+     * @param templateCode 模板编码
+     * @param params       模板参数匹配对（如 dspSlotId=768, sspSlotId=367110）
+     * @return 更新行数
+     */
+    int updateNotifyMessageReadByTemplateParam(Long userId, Integer userType, String templateCode,
+                                               java.util.Map<String, String> params);
+
 }

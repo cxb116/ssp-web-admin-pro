@@ -8,12 +8,22 @@ import java.util.regex.Pattern;
 /**
  * 捕获日志原文解析器
  *
- * dsp-api 上报的日志行格式（与本地 BusinessLog 打印完全一致）：
+ * dsp-api 上报的标准模板（三段式，以 " ### " 分隔）：
  *
- *   {报文原文} ### {DSP名} {req|res|ssp} catch ### 预算位ID: %d, 流量ID: %d,
+ *   {报文内容} ### {DSP名} {事件} ### 预算位ID: %d, 流量ID: %d,
+ *
+ * 标准事件集（dsp-api 端 impl/CaptureLog.go 文档为契约，新适配器照抄）：
+ *   原始请求      规范化 BidRequest JSON（报文段）
+ *   转发请求      发往 DSP 的协议请求体
+ *   响应体        DSP 原始协议响应体
+ *   请求超时      报文段为 "timeout" 占位（保持三段式）
+ *   JSON转化失败  报文段为 err 文本
+ *   响应媒体数据  竞价赢家下发给媒体的最终响应（含聚合后的 imp/click），事件段含 DSP 名
  *
  * 示例：
- *   {"code":10103,"msg":"无广告"} ### DSP_ZhuiYueDsp res catch ### 预算位ID: 826, 流量ID: 367168,
+ *   {...} ### QUANMEI 转发请求 ### 预算位ID: 768, 流量ID: 367110,
+ *   timeout ### QUANMEI 请求超时 ### 预算位ID: 768, 流量ID: 367110,
+ *   {...} ### HUANXI 响应媒体数据 ### 预算位ID: 768, 流量ID: 367110,
  *
  * dsp-api 侧大报文（>512KB）截断时保留元信息后缀、行尾追加 "(truncated)"。
  * 解析规则与 dsp-api 端截断逻辑对齐：以第一个 " ### " 作为报文与元信息的分界。
@@ -22,8 +32,13 @@ public class CaptureLogParser {
 
     static final String SEPARATOR = " ### ";
     static final String TRUNCATED_MARK = "(truncated)";
-    /** 元信息段中的类型后缀，如 " req catch" */
-    private static final String[] TYPE_SUFFIXES = {"req catch", "res catch", "ssp catch"};
+    /**
+     * 标准事件集（endsWith 匹配，匹配到的后缀去掉即 DSP 名）。
+     * 六个事件互不为彼此后缀，任意顺序匹配均安全。
+     */
+    private static final String[] TYPE_SUFFIXES = {
+            "原始请求", "转发请求", "响应体", "请求超时", "JSON转化失败", "响应媒体数据"
+    };
     private static final Pattern DSP_SLOT_PATTERN = Pattern.compile("预算位ID[:：]\\s*(\\d+)");
     private static final Pattern SSP_SLOT_PATTERN = Pattern.compile("流量ID[:：]\\s*(\\d+)");
 
@@ -35,6 +50,8 @@ public class CaptureLogParser {
      */
     public static CaptureLogVO parse(String line) {
         CaptureLogVO vo = new CaptureLogVO();
+        vo.setDspSlotId(0L); // 兜底维度统一为 0（避免 null 到前端）
+        vo.setSspSlotId(0L);
         if (line == null || line.isEmpty()) {
             vo.setType(TYPE_UNKNOWN);
             vo.setContent("");
@@ -61,14 +78,14 @@ public class CaptureLogParser {
         String meta = body.substring(sep + SEPARATOR.length());
         String[] segments = meta.split(SEPARATOR);
 
-        // 段1："{DSP名} {type} catch" → 类型 + DSP名
+        // 段1："{DSP名} {事件}" → 事件 + DSP名（type 直接存事件名，前端按事件过滤/着色）
         String type = TYPE_UNKNOWN;
         String dspName = "";
         if (segments.length > 0) {
             String head = segments[0].trim();
             for (String suffix : TYPE_SUFFIXES) {
                 if (head.endsWith(suffix)) {
-                    type = suffix.substring(0, suffix.indexOf(' ')); // req / res / ssp
+                    type = suffix;
                     dspName = head.substring(0, head.length() - suffix.length()).trim();
                     break;
                 }

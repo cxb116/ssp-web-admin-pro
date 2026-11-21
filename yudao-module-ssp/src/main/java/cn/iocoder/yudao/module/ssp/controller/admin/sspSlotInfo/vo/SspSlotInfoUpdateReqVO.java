@@ -46,4 +46,7 @@ public class SspSlotInfoUpdateReqVO {
     @Schema(description = "广告位状态")
     private Integer enable;
 
+    @Schema(description = "聚合预算：0=不开启，1=开启", example = "0")
+    private Integer merge;
+
 }

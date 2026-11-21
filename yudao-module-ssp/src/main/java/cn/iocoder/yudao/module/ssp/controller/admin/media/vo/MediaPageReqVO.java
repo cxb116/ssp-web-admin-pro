@@ -13,6 +13,9 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @Data
 public class MediaPageReqVO extends PageParam {
 
+    @Schema(description = "ID 列表，批量查询", example = "1,2,3")
+    private List<Long> id;
+
     @Schema(description = "账号名", example = "7880")
     private String account;
 

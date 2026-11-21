@@ -19,6 +19,7 @@ public interface MediaMapper extends BaseMapperX<MediaDO> {
 
     default PageResult<MediaDO> selectPage(MediaPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<MediaDO>()
+                .inIfPresent(MediaDO::getId, reqVO.getId())
                 .eqIfPresent(MediaDO::getAccount, reqVO.getAccount())
                 .likeIfPresent(MediaDO::getMediaCompanyShort, reqVO.getMediaCompanyShort())
                 .eqIfPresent(MediaDO::getAccessType, reqVO.getAccessType())

@@ -53,6 +53,12 @@
         LEFT JOIN ssp_media m
         ON a.media_id = m.id
         <where>
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND  a.id IN
+                <foreach collection="reqVO.id" item="idItem" open="(" separator="," close=")">
+                    #{idItem}
+                </foreach>
+            </if>
             <if test="reqVO.mediaId != null">
                 AND  a.media_id = #{reqVO.mediaId}
             </if>
@@ -83,6 +89,12 @@
         SELECT COUNT(*)
         FROM ssp_app a
         <where>
+            <if test="reqVO.id != null and reqVO.id.size() > 0">
+                AND  a.id IN
+                <foreach collection="reqVO.id" item="idItem" open="(" separator="," close=")">
+                    #{idItem}
+                </foreach>
+            </if>
             <if test="reqVO.mediaId != null">
                 AND  a.media_id = #{reqVO.mediaId}
             </if>

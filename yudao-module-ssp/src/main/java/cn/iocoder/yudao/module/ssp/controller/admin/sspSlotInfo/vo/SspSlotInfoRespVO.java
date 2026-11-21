@@ -89,6 +89,9 @@ public class SspSlotInfoRespVO {
     @DictFormat("ssp_enable") // TODO 代码优化：建议设置到对应的 DictTypeConstants 枚举类中
     private Integer enable;
 
+    @Schema(description = "聚合预算：0=不开启，1=开启", example = "0")
+    private Integer merge;
+
 
 
 

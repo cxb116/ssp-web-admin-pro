@@ -19,6 +19,7 @@ public interface CompanyMapper extends BaseMapperX<CompanyDO> {
 
     default PageResult<CompanyDO> selectPage(CompanyPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<CompanyDO>()
+                .inIfPresent(CompanyDO::getId, reqVO.getId())
                 .likeIfPresent(CompanyDO::getName, reqVO.getName())
                 .eqIfPresent(CompanyDO::getMethod, reqVO.getMethod())
                 .betweenIfPresent(CompanyDO::getCreateTime, reqVO.getCreateTime())

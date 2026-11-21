@@ -72,4 +72,13 @@ public class NotifyMessageServiceImpl implements NotifyMessageService {
         return notifyMessageMapper.updateListRead(userId, userType);
     }
 
+    @Override
+    public int updateNotifyMessageReadByTemplateParam(Long userId, Integer userType, String templateCode,
+                                                      java.util.Map<String, String> params) {
+        if (templateCode == null || templateCode.isEmpty() || params == null || params.isEmpty()) {
+            return 0;
+        }
+        return notifyMessageMapper.updateListReadByTemplateParam(userId, userType, templateCode, params);
+    }
+
 }

@@ -41,6 +41,7 @@ etcdPrefix: "/dsp/config"
 | company | `/dsp/config/company/` | DSP 公司配置 | DspCompany |
 | launch | `/dsp/config/launch/` | 媒体预算关联配置 | DspLaunch |
 | sspslot | `/dsp/config/sspslot/` | SSP 广告位配置 | SspSlotInfo |
+| blacklist | `/dsp/config/blacklist/` | 媒体域名黑名单 | SspSlotBlacklist |
 
 ## 事件类型
 
@@ -113,6 +114,14 @@ etcdctl put /dsp/config/sspslot/1 '{
   "os_type": 1,
   "app_id": 1
 }'
+
+# 添加/更新 媒体域名黑名单
+etcdctl put /dsp/config/blacklist/1 '{
+  "id": 1,
+  "media_id": 12682,
+  "backlist_domains": "a.com\nb.com",
+  "status": 1
+}'
 ```
 
 ### 2. DELETE 事件（删除数据）
@@ -134,6 +143,9 @@ etcdctl del /dsp/config/launch/1
 
 # 删除 SSP 广告位配置
 etcdctl del /dsp/config/sspslot/1
+
+# 删除 媒体域名黑名单
+etcdctl del /dsp/config/blacklist/1
 ```
 
 ## 数据结构定义
@@ -206,6 +218,17 @@ etcdctl del /dsp/config/sspslot/1
   "ssp_deal_ratio": "float64 (SSP分成比例)",
   "os_type": "int64 (操作系统类型)",
   "app_id": "int64 (应用ID)"
+}
+```
+
+### SspSlotBlacklist（媒体域名黑名单）
+
+```json
+{
+  "id": "int64 (必填)",
+  "media_id": "int64 (媒体ID)",
+  "backlist_domains": "string (黑名单域名列表，多行文本)",
+  "status": "int (是否开启：1开启，2关闭)"
 }
 ```
 

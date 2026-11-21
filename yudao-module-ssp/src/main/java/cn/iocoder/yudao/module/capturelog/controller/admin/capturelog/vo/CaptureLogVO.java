@@ -15,7 +15,7 @@ public class CaptureLogVO {
     @Schema(description = "序号（内存缓冲内递增，详情按此获取）", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Long seq;
 
-    @Schema(description = "捕获类型：req=发往DSP请求 / res=DSP响应 / ssp=竞价成功赢家响应 / unknown=未识别", example = "res")
+    @Schema(description = "捕获类型（标准事件集）：原始请求/转发请求/响应体/请求超时/JSON转化失败/响应媒体数据 / unknown=未识别", example = "响应体")
     private String type;
 
     @Schema(description = "DSP名称", example = "DSP_ZhuiYueDsp")

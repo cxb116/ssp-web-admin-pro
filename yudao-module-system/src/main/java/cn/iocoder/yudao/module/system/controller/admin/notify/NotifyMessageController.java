@@ -77,6 +77,18 @@ public class NotifyMessageController {
         return success(Boolean.TRUE);
     }
 
+    @PutMapping("/update-read-by-template-param")
+    @Operation(summary = "按模板+参数维度批量标记站内信已读",
+            description = "同一问题（相同模板且模板参数匹配，如 JSON转化失败告警的 预算位ID+流量位ID）的全部消息一键已读")
+    @Parameter(name = "templateCode", description = "模板编码", required = true, example = "capture_json_fail")
+    public CommonResult<Boolean> updateNotifyMessageReadByTemplateParam(
+            @RequestParam("templateCode") String templateCode,
+            @RequestBody java.util.Map<String, String> params) {
+        notifyMessageService.updateNotifyMessageReadByTemplateParam(
+                getLoginUserId(), UserTypeEnum.ADMIN.getValue(), templateCode, params);
+        return success(Boolean.TRUE);
+    }
+
     @GetMapping("/get-unread-list")
     @Operation(summary = "获取当前用户的最新站内信列表，默认 10 条")
     @Parameter(name = "size", description = "10")

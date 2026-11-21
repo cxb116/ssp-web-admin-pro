@@ -69,8 +69,17 @@ public class LaunchServiceImpl implements LaunchService {
         LaunchDO updateObj = BeanUtils.toBean(updateReqVO, LaunchDO.class);
         launchMapper.updateById(updateObj);
 
-        // 同步到etcd
-        syncToEtcd(updateObj);
+        // 同步到etcd：必须以数据库最终值为准回读后再推送。
+        // 原因：updateById 只更新非空字段，而 dsp-api 消费 etcd 时是"整对象替换"，
+        // 直接用请求 VO 推送会把本次未提交的字段按 null（JSON 中被忽略）或方法里的
+        // 默认值（如 traffic_weight=100）下发，导致 dsp-api 内存里这些字段被错误覆盖
+        // 或清零。回读保证 etcd 里永远是库里的完整最终状态。
+        LaunchDO saved = launchMapper.selectById(updateReqVO.getId());
+        if (saved == null) {
+            log.warn("Launch 更新后回读为空，跳过 etcd 同步, id: {}", updateReqVO.getId());
+            return;
+        }
+        syncToEtcd(saved);
     }
 
     @Override

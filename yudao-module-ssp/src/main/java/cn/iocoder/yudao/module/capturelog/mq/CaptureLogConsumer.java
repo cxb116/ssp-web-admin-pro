@@ -29,6 +29,9 @@ public class CaptureLogConsumer {
     @Resource
     private CaptureLogBuffer captureLogBuffer;
 
+    @Resource
+    private CaptureJsonFailNotifier captureJsonFailNotifier;
+
     @KafkaListener(
             topics = "${ssp.capture-log.topic:log-data}",
             groupId = "${spring.kafka.consumer.group-id:ssp-capture-log-group}",
@@ -42,6 +45,10 @@ public class CaptureLogConsumer {
             try {
                 CaptureLogVO vo = CaptureLogParser.parse(record.value());
                 captureLogBuffer.add(vo);
+                // JSON转化失败为严重事件（dsp-api 常推）：按维度聚合，每分钟站内信告警
+                if (CaptureJsonFailNotifier.EVENT_JSON_FAIL.equals(vo.getType())) {
+                    captureJsonFailNotifier.record(vo.getDspSlotId(), vo.getSspSlotId());
+                }
             } catch (Exception e) {
                 // 兜底：任何异常都以 unknown 原文保留，不能让毒消息阻断消费
                 log.error("[onMessage][捕获日志处理异常 offset={}]", record.offset(), e);

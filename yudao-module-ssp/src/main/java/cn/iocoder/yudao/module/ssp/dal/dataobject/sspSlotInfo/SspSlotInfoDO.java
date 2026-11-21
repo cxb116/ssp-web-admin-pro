@@ -81,6 +81,11 @@ public class SspSlotInfoDO extends BaseDO {
     private Integer enable;
 
     /**
+     * 聚合预算：0=不开启，1=开启
+     */
+    private Integer merge;
+
+    /**
      * 媒体简称
      */
     @TableField(exist = false)

@@ -189,6 +189,7 @@ public class SspSlotInfoServiceImpl implements SspSlotInfoService {
             // osType 为关联字段（ssp_app.os_type），同步前应使用 selectSlotInfoById 查全量
             etcdData.put("os_type", slotInfo.getOsType());
             etcdData.put("app_id", slotInfo.getAppId() != null ? slotInfo.getAppId() : 0);
+            etcdData.put("media_id", slotInfo.getMediaId() != null ? slotInfo.getMediaId() : 0);
 
             String etcdValue = JSONUtil.toJsonStr(etcdData);
 

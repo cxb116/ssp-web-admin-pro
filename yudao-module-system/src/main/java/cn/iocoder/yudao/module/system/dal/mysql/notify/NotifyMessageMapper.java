@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Map;
 import java.util.List;
 
 @Mapper
@@ -50,6 +51,27 @@ public interface NotifyMessageMapper extends BaseMapperX<NotifyMessageDO> {
                         .eq(NotifyMessageDO::getUserId, userId)
                         .eq(NotifyMessageDO::getUserType, userType)
                         .eq(NotifyMessageDO::getReadStatus, false));
+    }
+
+    /**
+     * 按模板 + 参数维度批量标记已读：同一问题（相同 templateCode 且 templateParams
+     * 包含指定参数对，如 dspSlotId/sspSlotId）的所有未读消息一键已读。
+     * templateParams 以 JSON 文本落库，按 "key":"value" 精确子串匹配（值为 ID 无歧义）。
+     */
+    default int updateListReadByTemplateParam(Long userId, Integer userType, String templateCode,
+                                              Map<String, String> params) {
+        LambdaQueryWrapperX<NotifyMessageDO> wrapper = new LambdaQueryWrapperX<NotifyMessageDO>()
+                .eq(NotifyMessageDO::getUserId, userId)
+                .eq(NotifyMessageDO::getUserType, userType)
+                .eq(NotifyMessageDO::getTemplateCode, templateCode)
+                .eq(NotifyMessageDO::getReadStatus, false);
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                wrapper.like(NotifyMessageDO::getTemplateParams,
+                        "\"" + entry.getKey() + "\":\"" + entry.getValue() + "\"");
+            }
+        }
+        return update(new NotifyMessageDO().setReadStatus(true).setReadTime(LocalDateTime.now()), wrapper);
     }
 
     default List<NotifyMessageDO> selectUnreadListByUserIdAndUserType(Long userId, Integer userType, Integer size) {
