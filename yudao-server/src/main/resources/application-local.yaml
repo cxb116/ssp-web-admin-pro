@@ -14,11 +14,11 @@ spring:
       web-stat-filter:
         enabled: true
       stat-view-servlet:
-        enabled: true
-        allow: # 设置白名单，不填则允许所有访问
+        enabled: false # 必须关闭！此前无密码+无IP白名单，任何人可访问 /druid/ 查看全部SQL与数据源信息（生产用 local profile 运行时直接裸奔）
+        allow: 127.0.0.1 # 设置白名单（已禁用控制台，仅留作以后开启时的安全默认值）
         url-pattern: /druid/*
-        login-username: # 控制台管理用户名和密码
-        login-password:
+        login-username: druid_admin # 控制台管理用户名和密码（已禁用控制台，仅留作以后开启时的安全默认值）
+        login-password: CHANGE_ME_BEFORE_ENABLE
       filter:
         stat:
           enabled: true
@@ -160,7 +160,7 @@ management:
     web:
       base-path: /actuator # Actuator 提供的 API 接口的根目录。默认为 /actuator
       exposure:
-        include: '*' # 需要开放的端点。默认值只打开 health 和 info 两个端点。通过设置 * ，可以开放所有端点。
+        include: 'health,info' # 此前为 '*' 全量开放：env 会泄露数据库/Redis密码明文，heapdump 可抠出token，任何低权限账号都可访问，只保留基础端点
 
 # Spring Boot Admin 配置项
 spring:
@@ -231,9 +231,9 @@ wx:
 # 芋道配置项，设置当前项目所有自定义的配置
 yudao:
   captcha:
-    enable: false # 本地环境，暂时关闭图片验证码，方便登录等接口的测试；
+    enable: true # 开启图片验证码（生产环境用 local profile 运行，此前 false 会覆盖 application.yaml 的 true，等于没开）
   security:
-    mock-enable: true
+    mock-enable: false # 必须关闭！开启后任何人可用默认密钥 test+用户ID 冒充任意用户（TokenAuthenticationFilter mockLoginUser）
   access-log: # 访问日志的配置项
     enable: false
   demo: false # 关闭演示模式
@@ -258,6 +258,17 @@ yudao:
     # DSP API 配置前缀
     dsp:
       prefix: /dsp/config
+
+--- #################### SSP 媒体 SSO 配置 ####################
+
+ssp:
+  # 【安全】媒体 SSO 票据签名密钥（HS512，≥64 字节）。
+  # 当前未配置时用的是源码里的硬编码默认值（开源代码人人可见），可被用于伪造票据、
+  # 以任意媒体账号身份登录媒体子后台！
+  # 启用步骤：① 生成 ≥64 字节随机串填到下面 ② 取消注释
+  #           ③【必须】同步修改媒体后台（MEDIA-ADMIN）的 jwt.secret 为同一个值，
+  #              两边一起部署，否则 SSO 跳转会失败！
+  # sso-secret: 在这里填生成的强随机密钥
 
 justauth:
   enabled: true

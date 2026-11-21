@@ -6,6 +6,8 @@ import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.datapermission.core.annotation.DataPermission;
+import cn.iocoder.yudao.framework.ratelimiter.core.annotation.RateLimiter;
+import cn.iocoder.yudao.framework.ratelimiter.core.keyresolver.impl.ExpressionRateLimiterKeyResolver;
 import cn.iocoder.yudao.framework.security.config.SecurityProperties;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.system.controller.admin.auth.vo.*;
@@ -117,27 +119,31 @@ public class AuthController {
         return success(AuthConvert.INSTANCE.convert(user, roles, menuList));
     }
 
-    @PostMapping("/register")
-    @PermitAll
-    @Operation(summary = "注册用户")
+    // ========== 以下登录/注册入口已下线（2026-11 安全加固：系统只保留账号密码登录） ==========
+    // 做法是注释掉路由映射注解，方法保留便于日后按需恢复。恢复时取消对应注解注释即可。
+
+    // 注册入口：管理后台账号由管理员创建，不开放自注册
+    // @PostMapping("/register")
+    // @PermitAll
+    // @Operation(summary = "注册用户")
     public CommonResult<AuthLoginRespVO> register(@RequestBody @Valid AuthRegisterReqVO registerReqVO) {
         return success(authService.register(registerReqVO));
     }
 
-    // ========== 短信登录相关 ==========
+    // ========== 短信登录相关（已下线：短信验证码曾配置为固定 9999 被入侵利用） ==========
 
-    @PostMapping("/sms-login")
-    @PermitAll
-    @Operation(summary = "使用短信验证码登录")
-    // 可按需开启限流：https://github.com/YunaiV/ruoyi-vue-pro/issues/851
+    // @PostMapping("/sms-login")
+    // @PermitAll
+    // @Operation(summary = "使用短信验证码登录")
     // @RateLimiter(time = 60, count = 6, keyResolver = ExpressionRateLimiterKeyResolver.class, keyArg = "#reqVO.mobile")
     public CommonResult<AuthLoginRespVO> smsLogin(@RequestBody @Valid AuthSmsLoginReqVO reqVO) {
         return success(authService.smsLogin(reqVO));
     }
 
-    @PostMapping("/send-sms-code")
-    @PermitAll
-    @Operation(summary = "发送手机验证码")
+    // @PostMapping("/send-sms-code")
+    // @PermitAll
+    // @Operation(summary = "发送手机验证码")
+    // @RateLimiter(time = 60, count = 1, keyResolver = ExpressionRateLimiterKeyResolver.class, keyArg = "#reqVO.mobile")
     public CommonResult<Boolean> sendLoginSmsCode(@RequestBody @Valid AuthSmsSendReqVO reqVO) {
         authService.sendSmsCode(reqVO);
         return success(true);
@@ -151,24 +157,24 @@ public class AuthController {
         return success(true);
     }
 
-    // ========== 社交登录相关 ==========
+    // ========== 社交登录相关（已下线：未接入任何社交平台，纯攻击面） ==========
 
-    @GetMapping("/social-auth-redirect")
-    @PermitAll
-    @Operation(summary = "社交授权的跳转")
-    @Parameters({
-            @Parameter(name = "type", description = "社交类型", required = true),
-            @Parameter(name = "redirectUri", description = "回调路径")
-    })
+    // @GetMapping("/social-auth-redirect")
+    // @PermitAll
+    // @Operation(summary = "社交授权的跳转")
+    // @Parameters({
+    //         @Parameter(name = "type", description = "社交类型", required = true),
+    //         @Parameter(name = "redirectUri", description = "回调路径")
+    // })
     public CommonResult<String> socialLogin(@RequestParam("type") Integer type,
                                             @RequestParam("redirectUri") String redirectUri) {
         return success(socialClientService.getAuthorizeUrl(
                 type, UserTypeEnum.ADMIN.getValue(), redirectUri));
     }
 
-    @PostMapping("/social-login")
-    @PermitAll
-    @Operation(summary = "社交快捷登录，使用 code 授权码", description = "适合未登录的用户，但是社交账号已绑定用户")
+    // @PostMapping("/social-login")
+    // @PermitAll
+    // @Operation(summary = "社交快捷登录，使用 code 授权码", description = "适合未登录的用户，但是社交账号已绑定用户")
     public CommonResult<AuthLoginRespVO> socialQuickLogin(@RequestBody @Valid AuthSocialLoginReqVO reqVO) {
         return success(authService.socialLogin(reqVO));
     }
