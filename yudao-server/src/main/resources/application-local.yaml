@@ -253,6 +253,8 @@ yudao:
     # huanxi
     endpoints:  http://42.81.9.158:2379
     #    endpoints: http://127.0.0.1:2379
+    username: root # etcd 认证账号（服务端已开启 auth，匿名访问会被拒绝）
+    password: etcd-admin-abin-123
     connect-timeout: 5000
     request-timeout: 30000
     # DSP API 配置前缀
