@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.datapermission.core.annotation.DataPermission;
 import cn.iocoder.yudao.framework.ratelimiter.core.annotation.RateLimiter;
+import cn.iocoder.yudao.framework.ratelimiter.core.keyresolver.impl.ClientIpRateLimiterKeyResolver;
 import cn.iocoder.yudao.framework.ratelimiter.core.keyresolver.impl.ExpressionRateLimiterKeyResolver;
 import cn.iocoder.yudao.framework.security.config.SecurityProperties;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
@@ -67,6 +68,8 @@ public class AuthController {
 
     @PostMapping("/login")
     @PermitAll
+    @RateLimiter(time = 60, count = 10, keyResolver = ClientIpRateLimiterKeyResolver.class,
+            message = "登录尝试过于频繁，请一分钟后再试") // 防爆破：同一 IP 每分钟最多 10 次（验证码已移除，靠限流兜底）
     @Operation(summary = "使用账号密码登录")
     public CommonResult<AuthLoginRespVO> login(@RequestBody @Valid AuthLoginReqVO reqVO) {
         return success(authService.login(reqVO));

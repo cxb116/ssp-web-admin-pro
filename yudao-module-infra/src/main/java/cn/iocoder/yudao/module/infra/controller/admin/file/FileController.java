@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
+// import javax.annotation.security.PermitAll; // 文件下载已改为需登录访问
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -99,7 +99,7 @@ public class FileController {
     }
 
     @GetMapping("/{configId}/get/**")
-    @PermitAll
+    // @PermitAll // 文件下载不再允许匿名访问：需登录后携带 token（header 或 URL 参数 ?token=xxx）
     @TenantIgnore
     @Operation(summary = "下载文件")
     @Parameter(name = "configId", description = "配置编号", required = true)
