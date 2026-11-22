@@ -113,6 +113,11 @@ public class OAuth2OpenController {
         if (grantTypeEnum == OAuth2GrantTypeEnum.IMPLICIT) {
             throw exception0(BAD_REQUEST.getCode(), "Token 接口不支持 implicit 授权模式");
         }
+        // 安全：client_credentials 模式无需用户凭据即可换取 ADMIN 类型 Token（userId=0），必须禁用！
+        // 本系统登录只走 /system/auth/login（账号密码），该授权模式无任何使用方
+        if (grantTypeEnum == OAuth2GrantTypeEnum.CLIENT_CREDENTIALS) {
+            throw exception0(BAD_REQUEST.getCode(), "Token 接口不支持 client_credentials 授权模式");
+        }
 
         // 1.2 校验客户端
         String[] clientIdAndSecret = obtainBasicAuthorization(request);
@@ -127,9 +132,6 @@ public class OAuth2OpenController {
                 break;
             case PASSWORD:
                 accessTokenDO = oauth2GrantService.grantPassword(username, password, client.getClientId(), scopes);
-                break;
-            case CLIENT_CREDENTIALS:
-                accessTokenDO = oauth2GrantService.grantClientCredentials(client.getClientId(), scopes);
                 break;
             case REFRESH_TOKEN:
                 accessTokenDO = oauth2GrantService.grantRefreshToken(refreshToken, client.getClientId());

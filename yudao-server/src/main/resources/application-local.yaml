@@ -46,15 +46,15 @@ spring:
       primary: master
       datasource:
         master:
-#          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-#          username: root
-#          password: 846402869cbb@gmail.com
+          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          username: root
+          password: 846402869cbb@gmail.com
 
 #
 #           huanxi
-          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-          username: root
-          password: 846402869@abcdefg!
+#          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+#          username: root
+#          password: 846402869@abcdefg!
 
 #          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
 #                    url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true # MySQL Connector/J 5.X 连接的示例
@@ -78,14 +78,14 @@ spring:
 #          username: root
 #          password: root
 
-#          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-#          username: root
-#          password: 846402869cbb@gmail.com
+          url: jdbc:mysql://mysqlbd8a09304398.rds.ivolces.com:3306/ssp?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          username: root
+          password: 846402869cbb@gmail.com
 
           # huanxi
-          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-          username: root
-          password: 846402869@abcdefg!
+#          url: jdbc:mysql://mysql0281cae5d96a.rds.ivolces.com:3306/ssp-huanxi?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+#          username: root
+#          password: 846402869@abcdefg!
 
 
 
@@ -94,21 +94,21 @@ spring:
 
 
   redis:
-#    host: redis-cnlft5iawyx9dkfiz.redis.ivolces.com # 地址
+    host: redis-cnlft5iawyx9dkfiz.redis.ivolces.com # 地址
 ##    host: 127.0.0.1
-#    port: 6379 # 端口
-#    database: 0 # 数据库索引
-#    password: Q8@xL3#vP9!mK21rT7&zN5wH1%fY41cJ # 密码，建议生产环境开启
-#    username: default
+    port: 6379 # 端口
+    database: 0 # 数据库索引
+    password: Q8@xL3#vP9!mK21rT7&zN5wH1%fY41cJ # 密码，建议生产环境开启
+    username: default
 
     #huanxi
 #  redis:
-    host: redis-cnlfaugy3owxssfhw.redis.ivolces.com # 地址
+#    host: redis-cnlfaugy3owxssfhw.redis.ivolces.com # 地址
 #        host: 127.0.0.1
-    port: 6379 # 端口
-    database: 0 # 数据库索引
-    password: 846402869@abcdefg!jiangzeqian#1099 # 密码，建议生产环境开启
-    username: default
+#    port: 6379 # 端口
+#    database: 0 # 数据库索引
+#    password: 846402869@abcdefg!jiangzeqian#1099 # 密码，建议生产环境开启
+#    username: default
 
 
 #
@@ -230,8 +230,6 @@ wx:
 
 # 芋道配置项，设置当前项目所有自定义的配置
 yudao:
-  captcha:
-    enable: true # 开启图片验证码（生产环境用 local profile 运行，此前 false 会覆盖 application.yaml 的 true，等于没开）
   security:
     mock-enable: false # 必须关闭！开启后任何人可用默认密钥 test+用户ID 冒充任意用户（TokenAuthenticationFilter mockLoginUser）
   access-log: # 访问日志的配置项
@@ -253,7 +251,7 @@ yudao:
     # huanxi
     endpoints:  http://42.81.9.158:2379
     #    endpoints: http://127.0.0.1:2379
-    username: root # etcd 认证账号（服务端已开启 auth，匿名访问会被拒绝）
+    username: writer # etcd 写账户（后台需要 PUT 配置，读写权限；root 仅保留给管理员，read 为只读账户）
     password: etcd-admin-abin-123
     connect-timeout: 5000
     request-timeout: 30000
@@ -273,33 +271,34 @@ ssp:
   # sso-secret: 在这里填生成的强随机密钥
 
 justauth:
-  enabled: true
-  type:
-    DINGTALK: # 钉钉
-      client-id: dingvrnreaje3yqvzhxg
-      client-secret: i8E6iZyDvZj51JIb0tYsYfVQYOks9Cq1lgryEjFRqC79P3iJcrxEwT6Qk2QvLrLI
-      ignore-check-redirect-uri: true
-    WECHAT_ENTERPRISE: # 企业微信
-      client-id: wwd411c69a39ad2e54
-      client-secret: 1wTb7hYxnpT2TUbIeHGXGo7T0odav1ic10mLdyyATOw
-      agent-id: 1000004
-      ignore-check-redirect-uri: true
-    # noinspection SpringBootApplicationYaml
-    WECHAT_MINI_PROGRAM: # 微信小程序
-      client-id: ${wx.miniapp.appid}
-      client-secret: ${wx.miniapp.secret}
-      ignore-check-redirect-uri: true
-      ignore-check-state: true # 微信小程序，不会使用到 state，所以不进行校验
-    WECHAT_MP: # 微信公众号
-      client-id: ${wx.mp.app-id}
-      client-secret: ${wx.mp.secret}
-      ignore-check-redirect-uri: true
-    ALIPAY: # 支付宝小程序
-      client-id: xx
-      client-secret: xx
-      alipay-public-key: xx
-      ignore-check-redirect-uri: true
-      ignore-check-state: true
+  enabled: true # 保持 true，保证 JustAuthProperties 正常装配（项目已关闭第三方登录，type 置空即可）
+  # 第三方登录已停用（社交登录接口均已注释），密钥不再入库，需要时再取消注释
+  # type:
+  #   DINGTALK: # 钉钉
+  #     client-id: dingvrnreaje3yqvzhxg
+  #     client-secret: i8E6iZyDvZj51JIb0tYsYfVQYOks9Cq1lgryEjFRqC79P3iJcrxEwT6Qk2QvLrLI
+  #     ignore-check-redirect-uri: true
+  #   WECHAT_ENTERPRISE: # 企业微信
+  #     client-id: wwd411c69a39ad2e54
+  #     client-secret: 1wTb7hYxnpT2TUbIeHGXGo7T0odav1ic10mLdyyATOw
+  #     agent-id: 1000004
+  #     ignore-check-redirect-uri: true
+  #   # noinspection SpringBootApplicationYaml
+  #   WECHAT_MINI_PROGRAM: # 微信小程序
+  #     client-id: ${wx.miniapp.appid}
+  #     client-secret: ${wx.miniapp.secret}
+  #     ignore-check-redirect-uri: true
+  #     ignore-check-state: true # 微信小程序，不会使用到 state，所以不进行校验
+  #   WECHAT_MP: # 微信公众号
+  #     client-id: ${wx.mp.app-id}
+  #     client-secret: ${wx.mp.secret}
+  #     ignore-check-redirect-uri: true
+  #   ALIPAY: # 支付宝小程序
+  #     client-id: xx
+  #     client-secret: xx
+  #     alipay-public-key: xx
+  #     ignore-check-redirect-uri: true
+  #     ignore-check-state: true
   cache:
     type: REDIS
     prefix: 'social_auth_state:' # 缓存前缀，目前只对 Redis 缓存生效，默认 JUSTAUTH::STATE::

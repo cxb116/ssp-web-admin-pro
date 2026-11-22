@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.system.service.auth;
 
-import cn.hutool.core.util.ReflectUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
 import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
@@ -19,16 +18,11 @@ import cn.iocoder.yudao.module.system.service.member.MemberService;
 import cn.iocoder.yudao.module.system.service.oauth2.OAuth2TokenService;
 import cn.iocoder.yudao.module.system.service.social.SocialUserService;
 import cn.iocoder.yudao.module.system.service.user.AdminUserService;
-import com.anji.captcha.model.common.ResponseModel;
-import com.anji.captcha.service.CaptchaService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 
 import javax.annotation.Resource;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 import static cn.hutool.core.util.RandomUtil.randomEle;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.assertPojoEquals;
@@ -49,8 +43,6 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
     @MockBean
     private AdminUserService userService;
     @MockBean
-    private CaptchaService captchaService;
-    @MockBean
     private LoginLogService loginLogService;
     @MockBean
     private SocialUserService socialUserService;
@@ -60,16 +52,6 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
     private OAuth2TokenService oauth2TokenService;
     @MockBean
     private MemberService memberService;
-    @MockBean
-    private Validator validator;
-
-    @BeforeEach
-    public void setUp() {
-        authService.setCaptchaEnable(true);
-        // 注入一个 Validator 对象
-        ReflectUtil.setFieldValue(authService, "validator",
-                Validation.buildDefaultValidatorFactory().getValidator());
-    }
 
     @Test
     public void testAuthenticate_success() {
@@ -154,8 +136,6 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
                 o.setUsername("test_username").setPassword("test_password")
                         .setSocialType(randomEle(SocialTypeEnum.values()).getType()));
 
-        // mock 验证码正确
-        authService.setCaptchaEnable(false);
         // mock user 数据
         AdminUserDO user = randomPojo(AdminUserDO.class, o -> o.setId(1L).setUsername("test_username")
                 .setPassword("test_password").setStatus(CommonStatusEnum.ENABLE.getStatus()));
@@ -260,53 +240,6 @@ public class AdminAuthServiceImplTest extends BaseDbUnitTest {
                 argThat(o -> o.getLogType().equals(LoginLogTypeEnum.LOGIN_SOCIAL.getType())
                         && o.getResult().equals(LoginResultEnum.SUCCESS.getResult())
                         && o.getUserId().equals(user.getId()))
-        );
-    }
-
-    @Test
-    public void testValidateCaptcha_successWithEnable() {
-        // 准备参数
-        AuthLoginReqVO reqVO = randomPojo(AuthLoginReqVO.class);
-
-        // mock 验证通过
-        when(captchaService.verification(argThat(captchaVO -> {
-            assertEquals(reqVO.getCaptchaVerification(), captchaVO.getCaptchaVerification());
-            return true;
-        }))).thenReturn(ResponseModel.success());
-
-        // 调用，无需断言
-        authService.validateCaptcha(reqVO);
-    }
-
-    @Test
-    public void testValidateCaptcha_successWithDisable() {
-        // 准备参数
-        AuthLoginReqVO reqVO = randomPojo(AuthLoginReqVO.class);
-
-        // mock 验证码关闭
-        authService.setCaptchaEnable(false);
-
-        // 调用，无需断言
-        authService.validateCaptcha(reqVO);
-    }
-
-    @Test
-    public void testCaptcha_fail() {
-        // 准备参数
-        AuthLoginReqVO reqVO = randomPojo(AuthLoginReqVO.class);
-
-        // mock 验证通过
-        when(captchaService.verification(argThat(captchaVO -> {
-            assertEquals(reqVO.getCaptchaVerification(), captchaVO.getCaptchaVerification());
-            return true;
-        }))).thenReturn(ResponseModel.errorMsg("就是不对"));
-
-        // 调用, 并断言异常
-        assertServiceException(() -> authService.validateCaptcha(reqVO), AUTH_LOGIN_CAPTCHA_CODE_ERROR, "就是不对");
-        // 校验调用参数
-        verify(loginLogService).createLoginLog(
-                argThat(o -> o.getLogType().equals(LoginLogTypeEnum.LOGIN_USERNAME.getType())
-                        && o.getResult().equals(LoginResultEnum.CAPTCHA_CODE_ERROR.getResult()))
         );
     }
 

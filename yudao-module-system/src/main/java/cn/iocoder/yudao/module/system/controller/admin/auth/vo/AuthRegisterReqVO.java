@@ -9,7 +9,7 @@ import javax.validation.constraints.*;
 
 @Schema(description = "管理后台 - Register Request VO")
 @Data
-public class AuthRegisterReqVO extends CaptchaVerificationReqVO {
+public class AuthRegisterReqVO {
 
     @Schema(description = "用户账号", requiredMode = Schema.RequiredMode.REQUIRED, example = "yudao")
     @NotBlank(message = "用户账号不能为空")

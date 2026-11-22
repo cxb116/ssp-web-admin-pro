@@ -86,8 +86,8 @@ public class OAuth2GrantServiceImpl implements OAuth2GrantService {
 
     @Override
     public OAuth2AccessTokenDO grantClientCredentials(String clientId, List<String> scopes) {
-        // 特殊：https://yuanbao.tencent.com/bot/app/share/chat/wFj642xSZHHx
-        return oauth2TokenService.createAccessToken(0L, UserTypeEnum.ADMIN.getValue(), clientId, scopes);
+        // 安全：该模式无需用户凭据即可发放 ADMIN 类型 Token，已禁止使用（原实现见 git 历史）
+        throw new UnsupportedOperationException("client_credentials 授权模式已禁用");
     }
 
     @Override
