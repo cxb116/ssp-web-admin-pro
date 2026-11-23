@@ -665,10 +665,10 @@ public class DspSlotDayServiceImpl implements DspSlotDayService {
                     .displayRate(retPv != 0 ? formatRate(showPv * 100.0 / retPv) : 0.0)
                     // 点击率 = 点击PV / 展示PV * 100%
                     .clickRate(showPv != 0 ? formatRate(clickPv * 100.0 / showPv) : 0.0)
-                    // ecpm = 收入 / 请求数 * 1000
-                    .ecpm(reqCount != 0 ? po * 1000 / showPv : 0L)
-                    // 媒体ecpm = 成本 / 请求数 * 1000
-                    .mediaEcpm(reqCount != 0 ? spend * 1000 / showPv : 0L)
+                    // ecpm（千次展示收益）= 收入 / 展示数 * 1000
+                    .ecpm(showPv != 0 ? po * 1000 / showPv : 0L)
+                    // 媒体ecpm（媒体千次展示收益）= 成本 / 展示数 * 1000
+                    .mediaEcpm(showPv != 0 ? spend * 1000 / showPv : 0L)
                     // ecprm = 收入 / 请求数 * 1000000
                     .ecprm(reqCount != 0 ? po * 1000000 / reqCount : 0L)
                     // 媒体ecprm = 成本 / 请求数 * 1000000

@@ -254,8 +254,11 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
                 .doubleValue();
     }
 
-    // 使用 BigDecimal 计算指标并统一保留 4 位小数。
+    // 使用 BigDecimal 计算指标并统一保留 4 位小数；除数为空或 0 时返回 0，避免除零异常。
     private double calculateMetric(BigDecimal amount, Long requestCount, long multiplier) {
+        if (requestCount == null || requestCount == 0) {
+            return 0.0;
+        }
         return amount.multiply(BigDecimal.valueOf(multiplier))
                 .divide(BigDecimal.valueOf(requestCount), 3, RoundingMode.HALF_UP)
                 .doubleValue();
