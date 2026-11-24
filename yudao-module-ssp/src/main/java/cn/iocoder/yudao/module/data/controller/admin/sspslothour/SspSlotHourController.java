@@ -13,6 +13,8 @@ import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -128,9 +130,37 @@ public class SspSlotHourController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<SspSlotHourDO> list = sspSlotHourService.getSspSlotHourPage(pageReqVO).getList();
+        List<SspSlotHourExportVO> rows = new ArrayList<>();
+        for (SspSlotHourDO item : list) {
+            SspSlotHourExportVO row = BeanUtils.toBean(item, SspSlotHourExportVO.class);
+            String date = item.getDate() == null ? "" : item.getDate().toString();
+            row.setHour(date.length() == 10 ? date.substring(8) + ":00" : date);
+            Integer osType = item.getOsType();
+            row.setOsLabel(osType == null ? "" : osType == 1 ? "Android" : osType == 2 ? "iOS" : osType.toString());
+            row.setFillRateText(item.getFillRate() + "%");
+            row.setDisplayRateText(item.getDisplayRate() + "%");
+            row.setClickRateText(item.getClickRate() + "%");
+            BigDecimal spend = item.getSpend();
+            BigDecimal income = item.getIncome();
+            if (spend != null || income != null) {
+                row.setRevenue(toExportAmount((spend == null ? BigDecimal.ZERO : spend)
+                        .add(income == null ? BigDecimal.ZERO : income)));
+            }
+            row.setSpendValue(toExportAmount(spend));
+            row.setIncomeValue(toExportAmount(income));
+            row.setMediaEcpmValue(toExportAmount(item.getMediaEcpm()));
+            row.setEcpmValue(toExportAmount(item.getEcpm()));
+            row.setMediaEcprmValue(toExportAmount(item.getMediaEcprm()));
+            row.setEcprmValue(toExportAmount(item.getEcprm()));
+            rows.add(row);
+        }
         // 导出 Excel
-        ExcelUtils.write(response, "DSP-SSP广告位报.xls", "数据", SspSlotHourRespVO.class,
-                        BeanUtils.toBean(list, SspSlotHourRespVO.class));
+        ExcelUtils.write(response, "DSP-SSP广告位报.xls", "数据", SspSlotHourExportVO.class, rows);
+    }
+
+    private BigDecimal toExportAmount(Number value) {
+        return value == null ? null : new BigDecimal(value.toString())
+                .movePointLeft(5).setScale(2, RoundingMode.HALF_UP);
     }
 
 }

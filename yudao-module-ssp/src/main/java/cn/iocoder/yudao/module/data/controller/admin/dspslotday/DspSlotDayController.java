@@ -84,9 +84,14 @@ public class DspSlotDayController {
     @GetMapping("/page")
     @Operation(summary = "获得DSP预算广告位日期报分页")
     @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
-    public CommonResult<PageResult<DspSlotDayRespVO>> getDspSlotDayPage(@Valid DspSlotDayPageReqVO pageReqVO) {
+    public CommonResult<PageResult<DspSlotDayRespVO>> getDspSlotDayPage(@Valid DspSlotDayPageReqVO pageReqVO,
+            @RequestParam(value = "displayUnits", defaultValue = "false") boolean displayUnits) {
         PageResult<DspSlotDayDO> pageResult = dspSlotDayService.getDspSlotDayPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, DspSlotDayRespVO.class));
+        PageResult<DspSlotDayRespVO> result = BeanUtils.toBean(pageResult, DspSlotDayRespVO.class);
+        if (displayUnits) {
+            result.getList().forEach(this::convertReportAmounts);
+        }
+        return success(result);
     }
 
 
@@ -102,7 +107,8 @@ public class DspSlotDayController {
     @GetMapping("/sum")
     @Operation(summary = "合计")
     @PreAuthorize("@ss.hasPermission('data:dsp-slot-day:query')")
-    public CommonResult<DspSlotDayRespVO> getDspSlotDaySum(@Valid DspSlotDayPageReqVO reqVO) {
+    public CommonResult<DspSlotDayRespVO> getDspSlotDaySum(@Valid DspSlotDayPageReqVO reqVO,
+            @RequestParam(value = "displayUnits", defaultValue = "false") boolean displayUnits) {
         String[] date = reqVO.getDate() == null ? null : reqVO.getDate().toArray(new String[0]);
         if (date != null && date.length == 1 && date[0] != null && date[0].contains(",")) {
             date = date[0].split(",");
@@ -119,6 +125,9 @@ public class DspSlotDayController {
         }
         reqVO.setDate(normalizedDate);
         DspSlotDayRespVO result = dspSlotDayService.getDspSlotDaySum(reqVO);
+        if (displayUnits && result != null) {
+            convertReportAmounts(result);
+        }
         return success(result);
     }
 
@@ -178,30 +187,35 @@ public class DspSlotDayController {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<DspSlotDayDO> list = dspSlotDayService.getDspSlotDayPage(pageReqVO).getList();
 
-        for (DspSlotDayDO dspSlotDayDO : list) {
-            BigDecimal divisor = BigDecimal.valueOf(100000);
-
-            BigDecimal income = dspSlotDayDO.getIncome();
-            BigDecimal spend = dspSlotDayDO.getSpend();
-
-            dspSlotDayDO.setTotalIncome(
-                    income.add(spend).divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-
-            dspSlotDayDO.setSpend(
-                    spend.divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-
-            dspSlotDayDO.setIncome(
-                    income.divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-        }
-
+        List<DspSlotDayRespVO> result = BeanUtils.toBean(list, DspSlotDayRespVO.class);
+        result.forEach(row -> {
+            convertReportAmounts(row);
+            if (row.getSpend() != null) row.setSpend(row.getSpend().setScale(2, RoundingMode.HALF_UP));
+            if (row.getIncome() != null) row.setIncome(row.getIncome().setScale(2, RoundingMode.HALF_UP));
+            if (row.getTotalIncome() != null) row.setTotalIncome(row.getTotalIncome().setScale(2, RoundingMode.HALF_UP));
+            if (row.getEcpm() != null) row.setEcpm(BigDecimal.valueOf(row.getEcpm()).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            if (row.getMediaEcpm() != null) row.setMediaEcpm(BigDecimal.valueOf(row.getMediaEcpm()).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            if (row.getEcprm() != null) row.setEcprm(BigDecimal.valueOf(row.getEcprm()).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            if (row.getMediaEcprm() != null) row.setMediaEcprm(BigDecimal.valueOf(row.getMediaEcprm()).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        });
         // 导出 Excel
-        ExcelUtils.write(response, "预算广告位日期报.xls", "数据", DspSlotDayRespVO.class,
-                        BeanUtils.toBean(list, DspSlotDayRespVO.class));
+        ExcelUtils.write(response, "预算广告位日期报.xls", "数据", DspSlotDayRespVO.class, result);
     }
 
+    private void convertReportAmounts(DspSlotDayRespVO row) {
+        BigDecimal spend = row.getSpend();
+        BigDecimal income = row.getIncome();
+        if (spend != null || income != null) {
+            row.setTotalIncome((spend == null ? BigDecimal.ZERO : spend)
+                    .add(income == null ? BigDecimal.ZERO : income).movePointLeft(5));
+        }
+        if (spend != null) row.setSpend(spend.movePointLeft(5));
+        if (income != null) row.setIncome(income.movePointLeft(5));
+        if (row.getEcpm() != null) row.setEcpm(row.getEcpm() / 100000.0);
+        if (row.getMediaEcpm() != null) row.setMediaEcpm(row.getMediaEcpm() / 100000.0);
+        if (row.getEcprm() != null) row.setEcprm(row.getEcprm() / 100000.0);
+        if (row.getMediaEcprm() != null) row.setMediaEcprm(row.getMediaEcprm() / 100000.0);
+    }
 
     @GetMapping("/export-excel-detail")
     @Operation(summary = "导出DSP预算广告位日期报 Excel")

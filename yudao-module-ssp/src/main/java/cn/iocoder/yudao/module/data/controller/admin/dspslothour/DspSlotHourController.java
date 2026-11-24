@@ -13,6 +13,8 @@ import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -129,9 +131,35 @@ public class DspSlotHourController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<DspSlotHourDO> list = dspSlotHourService.getDspSlotHourPage(pageReqVO).getList();
+        List<DspSlotHourExportVO> rows = new ArrayList<>();
+        for (DspSlotHourDO item : list) {
+            DspSlotHourExportVO row = BeanUtils.toBean(item, DspSlotHourExportVO.class);
+            String date = item.getDate() == null ? "" : item.getDate().toString();
+            row.setHour(date.length() == 10 ? date.substring(8) + ":00" : date);
+            row.setFillRate(item.getFillRate() + "%");
+            row.setDisplayRate(item.getDisplayRate() + "%");
+            row.setClickRate(item.getClickRate() + "%");
+            BigDecimal spend = item.getSpend();
+            BigDecimal income = item.getIncome();
+            if (spend != null || income != null) {
+                row.setRevenue(toExportAmount((spend == null ? BigDecimal.ZERO : spend)
+                        .add(income == null ? BigDecimal.ZERO : income)));
+            }
+            row.setSpend(toExportAmount(spend));
+            row.setIncome(toExportAmount(income));
+            row.setEcpm(toExportAmount(item.getEcpm()));
+            row.setMediaEcpm(toExportAmount(item.getMediaEcpm()));
+            row.setEcprm(toExportAmount(item.getEcprm()));
+            row.setMediaEcprm(toExportAmount(item.getMediaEcprm()));
+            rows.add(row);
+        }
         // 导出 Excel
-        ExcelUtils.write(response, "DSP预算广告位小时报.xls", "数据", DspSlotHourRespVO.class,
-                        BeanUtils.toBean(list, DspSlotHourRespVO.class));
+        ExcelUtils.write(response, "DSP预算广告位小时报.xls", "数据", DspSlotHourExportVO.class, rows);
+    }
+
+    private BigDecimal toExportAmount(Number value) {
+        return value == null ? null : new BigDecimal(value.toString())
+                .movePointLeft(5).setScale(2, RoundingMode.HALF_UP);
     }
 
     @GetMapping("/export-excel-detail")

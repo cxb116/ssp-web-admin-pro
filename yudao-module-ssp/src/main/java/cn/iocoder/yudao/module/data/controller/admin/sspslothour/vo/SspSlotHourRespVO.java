@@ -32,11 +32,11 @@ public class SspSlotHourRespVO {
     private Long sspSlotId;
 
     @Schema(description = "DSP广告位ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "1967")
-    @ExcelProperty("DSP广告位ID")
+//    @ExcelProperty("DSP广告位ID")
     private Long dspSlotId;
 
     @Schema(description = "预算广告位编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("预算广告位编号")
+//    @ExcelProperty("预算广告位编号")
     private String dspSlotCode;
 
     @Schema(description = "展示PV")
@@ -44,7 +44,7 @@ public class SspSlotHourRespVO {
     private Long showPv;
 
     @Schema(description = "展示UV")
-    @ExcelProperty("展示UV")
+//    @ExcelProperty("展示UV")
     private Long showUv;
 
     @Schema(description = "点击PV")
@@ -52,7 +52,7 @@ public class SspSlotHourRespVO {
     private Long clickPv;
 
     @Schema(description = "点击UV")
-    @ExcelProperty("点击UV")
+//    @ExcelProperty("点击UV")
     private Long clickUv;
 
     @Schema(description = "请求PV")
@@ -60,11 +60,11 @@ public class SspSlotHourRespVO {
     private Long reqPv;
 
     @Schema(description = "请求数", example = "26284")
-    @ExcelProperty("请求数")
+//    @ExcelProperty("请求数")
     private Long reqCount;
 
     @Schema(description = "请求UV")
-    @ExcelProperty("请求UV")
+//    @ExcelProperty("请求UV")
     private Long reqUv;
 
     @Schema(description = "丢弃请求")
@@ -72,7 +72,7 @@ public class SspSlotHourRespVO {
     private Long discard;
 
     @Schema(description = "响应超时丢弃")
-    @ExcelProperty("响应超时丢弃")
+//    @ExcelProperty("响应超时丢弃")
     private Long retDiscard;
 
     @Schema(description = "返回PV")
@@ -80,7 +80,7 @@ public class SspSlotHourRespVO {
     private Long retPv;
 
     @Schema(description = "返回UV")
-    @ExcelProperty("返回UV")
+//    @ExcelProperty("返回UV")
     private Long retUv;
 
     @Schema(description = "成本(分)")
@@ -92,35 +92,35 @@ public class SspSlotHourRespVO {
     private BigDecimal income;
 
     @Schema(description = "折后点击")
-    @ExcelProperty("折后点击")
+//    @ExcelProperty("折后点击")
     private Long discountClickPv;
 
     @Schema(description = "折后展示")
-    @ExcelProperty("折后展示")
+//    @ExcelProperty("折后展示")
     private Long discountShowPv;
 
     @Schema(description = "调起成功")
-    @ExcelProperty("调起成功")
+//    @ExcelProperty("调起成功")
     private Long dplsuccPv;
 
     @Schema(description = "完成量")
-    @ExcelProperty("完成量")
+//    @ExcelProperty("完成量")
     private Long completePv;
 
     @Schema(description = "安装量")
-    @ExcelProperty("安装量")
+//    @ExcelProperty("安装量")
     private Long installPv;
 
     @Schema(description = "激活量")
-    @ExcelProperty("激活量")
+//    @ExcelProperty("激活量")
     private Long activatePv;
 
     @Schema(description = "时间 yyyyMMddHH")
-    @ExcelProperty("时间 yyyyMMddHH")
+//    @ExcelProperty("时间 yyyyMMddHH")
     private Long date;
 
     @Schema(description = "创建时间戳")
-    @ExcelProperty("创建时间戳")
+//    @ExcelProperty("创建时间戳")
     private Long createdAt;
 
     @Schema(description = "媒体公司简称")
@@ -168,7 +168,7 @@ public class SspSlotHourRespVO {
     private Double mediaEcprm;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @ExcelProperty("创建时间")
+//    @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
 

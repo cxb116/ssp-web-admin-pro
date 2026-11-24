@@ -138,10 +138,10 @@ public class SspSlotHourServiceImpl implements SspSlotHourService {
                 sspSlotHourDO.setClickRate(0.0);
             }
             if (sspSlotHourDO.getSpend() != null && sspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal Profit = sspSlotHourDO.getSpend().add(sspSlotHourDO.getIncome());
+                BigDecimal Profit = sspSlotHourDO.getSpend().add(sspSlotHourDO.getIncome() == null ? BigDecimal.ZERO : sspSlotHourDO.getIncome());
                 // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                sspSlotHourDO.setEcpm(Profit.multiply(BigDecimal.valueOf(1000))
-                        .divide(BigDecimal.valueOf(sspSlotHourDO.getShowPv()), 3, RoundingMode.HALF_UP).doubleValue());
+                sspSlotHourDO.setEcpm(showPv == null || showPv == 0 ? 0.0 : Profit.multiply(BigDecimal.valueOf(1000))
+                        .divide(BigDecimal.valueOf(showPv), 3, RoundingMode.HALF_UP).doubleValue());
                 // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
                 if (reqCount > 1000000) {
                     sspSlotHourDO.setEcprm(Profit.multiply(BigDecimal.valueOf(1000000))
@@ -156,8 +156,8 @@ public class SspSlotHourServiceImpl implements SspSlotHourService {
             }
             if (sspSlotHourDO.getSpend() != null && sspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
                 // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                sspSlotHourDO.setMediaEcpm(sspSlotHourDO.getSpend().multiply(BigDecimal.valueOf(1000))
-                        .divide(BigDecimal.valueOf(sspSlotHourDO.getShowPv()), 3, RoundingMode.HALF_UP).doubleValue());
+                sspSlotHourDO.setMediaEcpm(showPv == null || showPv == 0 ? 0.0 : sspSlotHourDO.getSpend().multiply(BigDecimal.valueOf(1000))
+                        .divide(BigDecimal.valueOf(showPv), 3, RoundingMode.HALF_UP).doubleValue());
                 // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
 
                     sspSlotHourDO.setMediaEcprm(sspSlotHourDO.getSpend().multiply(BigDecimal.valueOf(1000000))

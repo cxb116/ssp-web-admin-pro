@@ -150,10 +150,9 @@ public class SspSlotDayServiceImpl implements SspSlotDayService {
             }
 
             if (sspSlotDayDO.getSpend() != null && sspSlotDayDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal Profit = sspSlotDayDO.getSpend().add(sspSlotDayDO.getIncome());
+                BigDecimal Profit = sspSlotDayDO.getSpend().add(Optional.ofNullable(sspSlotDayDO.getIncome()).orElse(BigDecimal.ZERO));
                 // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000
-                sspSlotDayDO.setEcpm(Profit.multiply(BigDecimal.valueOf(1000))
-                        .divide(BigDecimal.valueOf(sspSlotDayDO.getShowPv()), 3, RoundingMode.HALF_UP).doubleValue());
+                sspSlotDayDO.setEcpm(calculateMetric(Profit, Optional.ofNullable(sspSlotDayDO.getShowPv()).orElse(0L), 1000));
                 // 媒体ecprm（媒体百万请求收益）= 成本 / 请求 * 1000000
 
                     sspSlotDayDO.setEcprm(Profit.multiply(BigDecimal.valueOf(1000000))
@@ -165,8 +164,7 @@ public class SspSlotDayServiceImpl implements SspSlotDayService {
             }
             if (sspSlotDayDO.getSpend() != null && sspSlotDayDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
                 // ecpm（预算千次展示收益）= 收益 / 请求 * 1000
-                sspSlotDayDO.setMediaEcpm(sspSlotDayDO.getSpend().multiply(BigDecimal.valueOf(1000))
-                        .divide(BigDecimal.valueOf(sspSlotDayDO.getShowPv()), 3, RoundingMode.HALF_UP).doubleValue());
+                sspSlotDayDO.setMediaEcpm(calculateMetric(sspSlotDayDO.getSpend(), Optional.ofNullable(sspSlotDayDO.getShowPv()).orElse(0L), 1000));
                 // ecprm（预算百万请求收益）= 收益 / 请求 * 1000000
 
                     sspSlotDayDO.setMediaEcprm(sspSlotDayDO.getSpend().multiply(BigDecimal.valueOf(1000000))

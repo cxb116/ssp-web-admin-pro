@@ -156,7 +156,7 @@ public class DspSlotDayServiceImpl implements DspSlotDayService {
             // 媒体ecprm（媒体百万请求收益）=成本/展示*1000000
 
             if (dspSlotDayDO.getSpend() != null && dspSlotDayDO.getSpend().signum() > 0) {
-                BigDecimal Profit = dspSlotDayDO.getSpend().add(dspSlotDayDO.getIncome());
+                BigDecimal Profit = dspSlotDayDO.getSpend().add(Optional.ofNullable(dspSlotDayDO.getIncome()).orElse(BigDecimal.ZERO));
                 // 媒体ecpm（媒体千次展示收益）= 成本 / 展示 * 1000
                 dspSlotDayDO.setEcpm(calculateMetric(Profit, dspSlotDayDO.getShowPv(), 1000));
                 // 媒体ecprm（媒体百万请求收益）= 成本 / 展示 * 1000000

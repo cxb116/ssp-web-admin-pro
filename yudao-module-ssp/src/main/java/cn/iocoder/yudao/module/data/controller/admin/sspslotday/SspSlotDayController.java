@@ -162,30 +162,37 @@ public class SspSlotDayController {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
         List<SspSlotDayDO> list = sspSlotDayService.getSspSlotDayPage(pageReqVO).getList();
 
-        list.forEach(sspSlotDayDO -> {
-
-            BigDecimal divisor = BigDecimal.valueOf(100000);
-
-            BigDecimal income = sspSlotDayDO.getIncome();
-            BigDecimal spend = sspSlotDayDO.getSpend();
-
-            sspSlotDayDO.setTotalIncome(
-                    income.add(spend).divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-
-            sspSlotDayDO.setSpend(
-                    spend.divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-
-            sspSlotDayDO.setIncome(
-                    income.divide(divisor, 2, RoundingMode.HALF_UP)
-            );
-
-        });
-
+        List<SspSlotDayExportVO> rows = new ArrayList<>();
+        for (SspSlotDayDO item : list) {
+            SspSlotDayExportVO row = BeanUtils.toBean(item, SspSlotDayExportVO.class);
+            String date = item.getDate() == null ? "" : item.getDate().toString();
+            row.setDateText(date.length() == 8 ? date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6) : date);
+            Integer osType = item.getOsType();
+            row.setOsLabel(osType == null ? "" : osType == 1 ? "Android" : osType == 2 ? "iOS" : osType.toString());
+            row.setFillRateText(item.getFillRate() + "%");
+            row.setDisplayRateText(item.getDisplayRate() + "%");
+            row.setClickRateText(item.getClickRate() + "%");
+            BigDecimal spend = item.getSpend();
+            BigDecimal income = item.getIncome();
+            if (spend != null || income != null) {
+                row.setRevenue(toExportAmount((spend == null ? BigDecimal.ZERO : spend)
+                        .add(income == null ? BigDecimal.ZERO : income)));
+            }
+            row.setSpendValue(toExportAmount(spend));
+            row.setIncomeValue(toExportAmount(income));
+            row.setMediaEcpmValue(toExportAmount(item.getMediaEcpm()));
+            row.setEcpmValue(toExportAmount(item.getEcpm()));
+            row.setMediaEcprmValue(toExportAmount(item.getMediaEcprm()));
+            row.setEcprmValue(toExportAmount(item.getEcprm()));
+            rows.add(row);
+        }
         // 导出 Excel
-        ExcelUtils.write(response, "DSP-SSP广告位报.xls", "数据", SspSlotDayRespVO.class,
-                        BeanUtils.toBean(list, SspSlotDayRespVO.class));
+        ExcelUtils.write(response, "DSP-SSP广告位报.xls", "数据", SspSlotDayExportVO.class, rows);
+    }
+
+    private BigDecimal toExportAmount(Number value) {
+        return value == null ? null : new BigDecimal(value.toString())
+                .movePointLeft(5).setScale(2, RoundingMode.HALF_UP);
     }
 
 }

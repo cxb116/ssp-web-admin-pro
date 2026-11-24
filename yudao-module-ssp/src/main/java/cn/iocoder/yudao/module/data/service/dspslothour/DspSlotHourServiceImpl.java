@@ -142,7 +142,7 @@ public class DspSlotHourServiceImpl implements DspSlotHourService {
             }
 
             if (dspSlotHourDO.getSpend() != null && dspSlotHourDO.getSpend().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal Profit = dspSlotHourDO.getSpend().add(dspSlotHourDO.getIncome());
+                BigDecimal Profit = dspSlotHourDO.getSpend().add(dspSlotHourDO.getIncome() == null ? BigDecimal.ZERO : dspSlotHourDO.getIncome());
 
 
                 // 媒体ecpm（媒体千次展示收益）= 成本 / 请求 * 1000

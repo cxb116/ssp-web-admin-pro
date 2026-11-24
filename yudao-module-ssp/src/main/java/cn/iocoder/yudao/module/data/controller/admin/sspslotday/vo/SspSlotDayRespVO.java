@@ -67,7 +67,7 @@ public class SspSlotDayRespVO {
     private Long discard;
 
     @Schema(description = "响应超时丢弃")
-    @ExcelProperty("响应超时丢弃")
+//    @ExcelProperty("响应超时丢弃")
     private Long retDiscard;
 
     @Schema(description = "返回PV")
@@ -128,19 +128,19 @@ public class SspSlotDayRespVO {
     private Long discountShowPv;
 
     @Schema(description = "调起成功")
-    @ExcelProperty("调起成功")
+//    @ExcelProperty("调起成功")
     private Long dplsuccPv;
 
     @Schema(description = "完成量")
-    @ExcelProperty("完成量")
+//    @ExcelProperty("完成量")
     private Long completePv;
 
     @Schema(description = "安装量")
-    @ExcelProperty("安装量")
+//    @ExcelProperty("安装量")
     private Long installPv;
 
     @Schema(description = "激活量")
-    @ExcelProperty("激活量")
+//    @ExcelProperty("激活量")
     private Long activatePv;
 
     @Schema(description = "创建时间戳")
