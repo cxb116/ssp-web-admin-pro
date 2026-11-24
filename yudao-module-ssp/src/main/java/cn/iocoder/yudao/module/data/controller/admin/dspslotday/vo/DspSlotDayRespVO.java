@@ -21,6 +21,10 @@ public class DspSlotDayRespVO {
     @ExcelProperty("时间")
     private Integer date;
 
+    @Schema(description = "预算公司名称")
+    @ExcelProperty("预算公司名称")
+    private String companyName;
+
     @Schema(description = "DSP预算名称")
     @ExcelProperty("预算位名称")
     private String dspName;
@@ -130,10 +134,6 @@ private Double fillRate;
     private Integer createdAt;
 
 
-
-    @Schema(description = "公司名称")
-//    @ExcelProperty("公司名称")
-    private String companyName;
 
     @Schema(description = "预算公司ID")
     private Long companyId;

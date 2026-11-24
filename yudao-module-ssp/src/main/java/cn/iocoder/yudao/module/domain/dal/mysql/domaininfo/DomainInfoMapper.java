@@ -79,4 +79,13 @@ public interface DomainInfoMapper extends BaseMapperX<DomainInfoDO> {
                                       @Param("dateEnd") long dateEnd,
                                       @Param("orderByReqPv") String orderByReqPv);
 
+    /**
+     * 查询匹配过滤条件的分组的全部域名明细，用于按域名总数、单组域名最大数排序。
+     *
+     * @param reqVO 过滤条件
+     * @return 分组内全部记录（仅 id、dsp_slot_id、domains）
+     */
+    @InterceptorIgnore(tenantLine = "true") // 子查询聚合会导致多租户拦截器的 JSQLParser 解析失败，此处跳过租户 SQL 解析
+    List<DomainInfoDO> selectDspSlotGroupDomainRows(@Param("reqVO") DomainInfoPageReqVO reqVO);
+
 }

@@ -41,6 +41,9 @@ import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.
 @Validated
 public class DomainInfoServiceImpl implements DomainInfoService {
 
+    private static final String SORT_FIELD_DOMAIN_COUNT = "domainCount";
+    private static final String SORT_FIELD_MAX_DOMAIN_LENGTH = "maxDomainLength";
+
     @Resource
     private DomainInfoMapper domainInfoMapper;
 
@@ -105,7 +108,9 @@ public class DomainInfoServiceImpl implements DomainInfoService {
         LocalDate today = LocalDate.now();
         long dateBegin = Long.parseLong(today.format(DateTimeFormatter.BASIC_ISO_DATE));
         long dateEnd = Long.parseLong(today.plusDays(1).format(DateTimeFormatter.BASIC_ISO_DATE));
-        // 仅支持按请求PV（todayReqPv）排序，白名单转成 ASC/DESC，其余字段走默认排序
+        // 域名统计排序（domainCount/maxDomainLength）需要按全量分组计算后排序；
+        // 请求PV排序仍下推到 SQL，其余字段走默认排序
+        SortingField domainSort = resolveDomainSort(pageReqVO.getSortingFields());
         String orderByReqPv = resolveReqPvSort(pageReqVO.getSortingFields());
 
         // 1. 按 dsp_slot_id 分组做真正的分页：先查组数，再取本页的 dsp_slot_id（SQL 内已按请求PV排序）
@@ -117,8 +122,10 @@ public class DomainInfoServiceImpl implements DomainInfoService {
         Integer limit = pageReqVO.getPageSize() != null && pageReqVO.getPageSize() < 0
                 ? null : pageReqVO.getPageSize();
         int offset = limit == null ? 0 : (pageReqVO.getPageNo() - 1) * limit;
-        List<Long> dspSlotIds = domainInfoMapper.selectDspSlotGroupPage(pageReqVO, offset, limit,
-                dateBegin, dateEnd, orderByReqPv);
+        List<Long> dspSlotIds = domainSort != null
+                ? selectDspSlotIdsSortedByDomain(pageReqVO, offset, limit, domainSort)
+                : domainInfoMapper.selectDspSlotGroupPage(pageReqVO, offset, limit,
+                        dateBegin, dateEnd, orderByReqPv);
         if (dspSlotIds.isEmpty()) {
             return PageResult.empty(total);
         }
@@ -176,15 +183,11 @@ public class DomainInfoServiceImpl implements DomainInfoService {
                 if (StrUtil.isBlank(row.getDomains())) {
                     continue;
                 }
-                Set<String> recordDomains = new HashSet<>();
-                for (String domain : row.getDomains().split("\\|")) {
-                    domain = StrUtil.trimToNull(domain);
-                    if (domain != null) {
-                        recordDomains.add(domain);
-                        domainSet.add(domain);
-                    }
+                Set<String> recordDomains = parseDomains(row.getDomains());
+                if (!recordDomains.isEmpty()) {
+                    domainSet.addAll(recordDomains);
+                    maxRecordDomainCount = Math.max(maxRecordDomainCount, recordDomains.size());
                 }
-                maxRecordDomainCount = Math.max(maxRecordDomainCount, recordDomains.size());
             }
             DomainInfoRespVO vo = new DomainInfoRespVO();
             vo.setId(latest.getId());
@@ -210,7 +213,7 @@ public class DomainInfoServiceImpl implements DomainInfoService {
             vo.setTodayReqPv(reqPvMap.getOrDefault(vo.getDspSlotId(), 0L));
         }
 
-        // 5. 不再在 Java 里重排：SQL 已按排序条件（默认组内最新 id 倒序）返回本页 dsp_slot_id，顺序即最终顺序
+        // 5. 顺序由前面返回的 dspSlotIds 决定：请求PV由 SQL 排序，域名统计由 Java 全量排序
         return new PageResult<>(vos, total);
     }
 
@@ -221,17 +224,106 @@ public class DomainInfoServiceImpl implements DomainInfoService {
     }
 
     /**
+     * 按域名总数、单组域名最大数对全部分组排序，再截取当前页。
+     * 统计口径与列表展示一致：先按过滤条件确定分组，再合并组内全部记录的域名。
+     */
+    private List<Long> selectDspSlotIdsSortedByDomain(DomainInfoPageReqVO reqVO, int offset, Integer limit,
+                                                       SortingField sortingField) {
+        List<DomainInfoDO> rows = domainInfoMapper.selectDspSlotGroupDomainRows(reqVO);
+        Map<Long, DomainGroupStat> statMap = new HashMap<>();
+        for (DomainInfoDO row : rows) {
+            if (row.getDspSlotId() == null) {
+                continue;
+            }
+            DomainGroupStat stat = statMap.computeIfAbsent(row.getDspSlotId(), DomainGroupStat::new);
+            if (row.getId() != null && row.getId() > stat.maxId) {
+                stat.maxId = row.getId();
+            }
+            Set<String> recordDomains = parseDomains(row.getDomains());
+            if (recordDomains.isEmpty()) {
+                continue;
+            }
+            stat.domains.addAll(recordDomains);
+            stat.maxDomainLength = Math.max(stat.maxDomainLength, recordDomains.size());
+        }
+
+        List<DomainGroupStat> stats = new ArrayList<>(statMap.values());
+        Comparator<DomainGroupStat> comparator;
+        if (SORT_FIELD_DOMAIN_COUNT.equals(sortingField.getField())) {
+            comparator = Comparator.comparingInt((DomainGroupStat stat) -> stat.domains.size());
+        } else {
+            comparator = Comparator.comparingInt((DomainGroupStat stat) -> stat.maxDomainLength);
+        }
+        if (!SortingField.ORDER_ASC.equalsIgnoreCase(sortingField.getOrder())) {
+            comparator = comparator.reversed();
+        }
+        // 统计值相同时保持默认的组内最新 id 倒序，避免分页时顺序不稳定
+        comparator = comparator.thenComparing(
+                Comparator.comparingLong((DomainGroupStat stat) -> stat.maxId).reversed());
+        stats.sort(comparator);
+
+        int from = limit == null ? 0 : Math.min(offset, stats.size());
+        int to = limit == null ? stats.size() : Math.min(from + limit, stats.size());
+        List<Long> dspSlotIds = new ArrayList<>(to - from);
+        for (int i = from; i < to; i++) {
+            dspSlotIds.add(stats.get(i).dspSlotId);
+        }
+        return dspSlotIds;
+    }
+
+    /** 按 | 拆分域名，并做 trim、去空、组内去重，和列表展示口径保持一致 */
+    private Set<String> parseDomains(String domains) {
+        Set<String> result = new HashSet<>();
+        if (StrUtil.isBlank(domains)) {
+            return result;
+        }
+        for (String domain : domains.split("\\|")) {
+            domain = StrUtil.trimToNull(domain);
+            if (domain != null) {
+                result.add(domain);
+            }
+        }
+        return result;
+    }
+
+    /** 解析域名统计排序字段；其他字段返回 null */
+    private SortingField resolveDomainSort(List<SortingField> sortingFields) {
+        SortingField sortField = getFirstSortingField(sortingFields);
+        if (sortField == null) {
+            return null;
+        }
+        return SORT_FIELD_DOMAIN_COUNT.equals(sortField.getField())
+                || SORT_FIELD_MAX_DOMAIN_LENGTH.equals(sortField.getField()) ? sortField : null;
+    }
+
+    /**
      * 解析排序参数：仅白名单支持按请求PV（todayReqPv）排序，取第一个排序字段；
      * 其他字段或未排序返回 null，走 SQL 默认排序（组内最新 id 倒序）
      */
     private String resolveReqPvSort(List<SortingField> sortingFields) {
-        if (sortingFields == null || sortingFields.isEmpty() || sortingFields.get(0) == null) {
-            return null;
-        }
-        SortingField sf = sortingFields.get(0);
-        if (!"todayReqPv".equals(sf.getField())) {
+        SortingField sf = getFirstSortingField(sortingFields);
+        if (sf == null || !"todayReqPv".equals(sf.getField())) {
             return null;
         }
         return SortingField.ORDER_ASC.equalsIgnoreCase(sf.getOrder()) ? "ASC" : "DESC";
+    }
+
+    private SortingField getFirstSortingField(List<SortingField> sortingFields) {
+        if (sortingFields == null || sortingFields.isEmpty() || sortingFields.get(0) == null) {
+            return null;
+        }
+        return sortingFields.get(0);
+    }
+
+    private static class DomainGroupStat {
+
+        private final Long dspSlotId;
+        private final Set<String> domains = new HashSet<>();
+        private int maxDomainLength;
+        private long maxId;
+
+        private DomainGroupStat(Long dspSlotId) {
+            this.dspSlotId = dspSlotId;
+        }
     }
 }

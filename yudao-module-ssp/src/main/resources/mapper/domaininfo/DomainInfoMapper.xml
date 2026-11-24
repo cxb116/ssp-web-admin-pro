@@ -82,4 +82,21 @@
         </if>
     </select>
 
+    <!--
+        按域名总数、单组域名最大数排序时使用：
+        先用过滤条件确定匹配的分组，再取这些分组的全部明细，保证统计口径与列表展示一致
+        （列表展示时也是先筛组，再把组内全部记录合并去重）。
+    -->
+    <select id="selectDspSlotGroupDomainRows"
+            resultType="cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo.DomainInfoDO">
+        SELECT d.id, d.dsp_slot_id, d.domains
+        FROM dsp_domain_info d
+        INNER JOIN (
+            SELECT DISTINCT dsp_slot_id
+            FROM dsp_domain_info
+            <include refid="dspSlotGroupWhere"/>
+        ) matched ON matched.dsp_slot_id = d.dsp_slot_id
+        WHERE d.deleted = 0
+    </select>
+
 </mapper>

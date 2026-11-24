@@ -246,10 +246,10 @@ yudao:
 yudao:
   etcd:
     enabled: true
-#    endpoints: http://42.81.102.125:2379
+    endpoints: http://42.81.102.125:2379
 
     # huanxi
-    endpoints:  http://42.81.9.158:2379
+#    endpoints:  http://42.81.9.158:2379
     #    endpoints: http://127.0.0.1:2379
     username: writer # etcd 写账户（后台需要 PUT 配置，读写权限；root 仅保留给管理员，read 为只读账户）
     password: etcd-admin-abin-123
