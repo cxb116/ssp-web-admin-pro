@@ -97,8 +97,16 @@ public class DomainInfoServiceImpl implements DomainInfoService {
     }
 
     @Override
-    public DomainInfoDO getInfo(Long id) {
-        return domainInfoMapper.selectById(id);
+    public DomainInfoRespVO getInfo(Long id) {
+        DomainInfoDO row = domainInfoMapper.selectById(id);
+        if (row == null) {
+            return null;
+        }
+        DomainInfoRespVO vo = BeanUtils.toBean(row, DomainInfoRespVO.class);
+        LocalDate today = LocalDate.now();
+        Long total = dailyCountTotal(row.getDspSlotId(), today);
+        vo.setProportion(calculateDailyProportion(row.getProportion(), row.getProportionDate(), today, total));
+        return vo;
     }
 
     @Override
@@ -220,7 +228,29 @@ public class DomainInfoServiceImpl implements DomainInfoService {
     @Override
     public List<DomainInfoRespVO> getInfoListByDspSlotId(Long dspSlotId, Integer limit) {
         List<DomainInfoDO> list = domainInfoMapper.selectListByDspSlotId(dspSlotId, limit);
-        return BeanUtils.toBean(list, DomainInfoRespVO.class);
+        List<DomainInfoRespVO> vos = BeanUtils.toBean(list, DomainInfoRespVO.class);
+        LocalDate today = LocalDate.now();
+        Long totalCount = dailyCountTotal(dspSlotId, today);
+        for (int i = 0; i < list.size(); i++) {
+            DomainInfoDO row = list.get(i);
+            vos.get(i).setProportion(calculateDailyProportion(row.getProportion(), row.getProportionDate(),
+                    today, totalCount));
+        }
+        return vos;
+    }
+
+    private Long dailyCountTotal(Long dspSlotId, LocalDate statDate) {
+        return domainInfoMapper.selectDailyGroupCountTotal(dspSlotId, statDate);
+    }
+
+    /** API 仍用百万分比传百分比，前端除以 10,000 后显示百分数。 */
+    private Long calculateDailyProportion(Long groupCount, LocalDate proportionDate,
+                                          LocalDate today, Long totalCount) {
+        if (groupCount == null || groupCount <= 0 || !today.equals(proportionDate)
+                || totalCount == null || totalCount <= 0) {
+            return null;
+        }
+        return Math.round((double) groupCount * 1_000_000D / totalCount);
     }
 
     /**

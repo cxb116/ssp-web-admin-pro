@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo;
 
 import lombok.*;
 import java.util.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
@@ -35,6 +35,14 @@ public class DomainInfoDO extends BaseDO {
      * 媒体ID
      */
     private Long sspSlotId;
+    /**
+     * 当天该域名组的累计上报次数
+     */
+    private Long proportion;
+    /**
+     * 占比统计日期
+     */
+    private LocalDate proportionDate;
     /**
      * 域名集
      */

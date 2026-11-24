@@ -43,6 +43,9 @@ CREATE TABLE IF NOT EXISTS `dsp_domain_info` (
     `dsp_slot_id` bigint        NULL DEFAULT NULL COMMENT '预算ID',
     `ssp_slot_id` bigint        NULL DEFAULT NULL COMMENT '媒体ID',
     `domains`     text          NULL COMMENT '域名集',
+    `domains_hash` binary(32)    GENERATED ALWAYS AS (UNHEX(SHA2(COALESCE(`domains`, ''), 256))) STORED,
+    `proportion`  bigint        NOT NULL DEFAULT 0 COMMENT '当天该域名组累计上报次数',
+    `proportion_date` date      NULL COMMENT '占比统计日期',
     `creator`     varchar(64)   NULL DEFAULT '' COMMENT '创建者',
     `create_time` datetime      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updater`     varchar(64)   NULL DEFAULT '' COMMENT '更新者',
@@ -50,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `dsp_domain_info` (
     `deleted`     bit(1)        NOT NULL DEFAULT b'0' COMMENT '是否删除',
     `tenant_id`   bigint        NOT NULL DEFAULT 0 COMMENT '租户编号',
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_domain` (`ssp_slot_id`, `dsp_slot_id`, `domains_hash`),
     KEY `idx_dsp_slot_id` (`dsp_slot_id`),
     KEY `idx_ssp_slot_id` (`ssp_slot_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'DSP域名详情';

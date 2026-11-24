@@ -49,7 +49,7 @@ public interface DomainInfoService {
      * @param id 编号
      * @return DSP域名详情
      */
-    DomainInfoDO getInfo(Long id);
+    DomainInfoRespVO getInfo(Long id);
 
     /**
      * 获得DSP域名详情分页（按 dsp_slot_id 分组合并：domains 去重重组，一个 dsp_slot_id 只返回一条）

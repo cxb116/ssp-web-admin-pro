@@ -17,7 +17,6 @@ import java.io.IOException;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
@@ -26,7 +25,6 @@ import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 
 import cn.iocoder.yudao.module.domain.controller.admin.domaininfo.vo.*;
-import cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo.DomainInfoDO;
 import cn.iocoder.yudao.module.domain.service.domaininfo.DomainInfoService;
 
 @Tag(name = "管理后台 - DSP域名详情")
@@ -76,8 +74,7 @@ public class DomainInfoController {
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('domain:info:query')")
     public CommonResult<DomainInfoRespVO> getInfo(@RequestParam("id") Long id) {
-        DomainInfoDO info = infoService.getInfo(id);
-        return success(BeanUtils.toBean(info, DomainInfoRespVO.class));
+        return success(infoService.getInfo(id));
     }
 
     @GetMapping("/page")

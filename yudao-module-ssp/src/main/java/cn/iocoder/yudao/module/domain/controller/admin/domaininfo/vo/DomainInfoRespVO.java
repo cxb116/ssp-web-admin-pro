@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import cn.idev.excel.annotation.*;
 
@@ -35,6 +36,14 @@ public class DomainInfoRespVO {
     @Schema(description = "域名集", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("域名集")
     private String domains;
+
+    @Schema(description = "域名占比，百万分比（1_000_000表示100%）", example = "123456")
+    @ExcelProperty("域名占比（%）")
+    private Long proportion;
+
+    @Schema(description = "域名占比统计日期", example = "2026-11-24")
+    @ExcelProperty("占比统计日期")
+    private LocalDate proportionDate;
 
     @Schema(description = "该 dsp_slot_id 下各条记录中，单条 domains 域名数量最多的数量", example = "9")
     @ExcelProperty("最大域名数量")
