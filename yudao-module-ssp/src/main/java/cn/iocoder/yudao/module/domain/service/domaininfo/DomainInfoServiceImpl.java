@@ -104,7 +104,7 @@ public class DomainInfoServiceImpl implements DomainInfoService {
         }
         DomainInfoRespVO vo = BeanUtils.toBean(row, DomainInfoRespVO.class);
         LocalDate today = LocalDate.now();
-        Long total = dailyCountTotal(row.getDspSlotId(), today);
+        Long total = dailyCountTotal(today);
         vo.setProportion(calculateDailyProportion(row.getProportion(), row.getProportionDate(), today, total));
         return vo;
     }
@@ -228,19 +228,115 @@ public class DomainInfoServiceImpl implements DomainInfoService {
     @Override
     public List<DomainInfoRespVO> getInfoListByDspSlotId(Long dspSlotId, Integer limit) {
         List<DomainInfoDO> list = domainInfoMapper.selectListByDspSlotId(dspSlotId, limit);
-        List<DomainInfoRespVO> vos = BeanUtils.toBean(list, DomainInfoRespVO.class);
         LocalDate today = LocalDate.now();
-        Long totalCount = dailyCountTotal(dspSlotId, today);
-        for (int i = 0; i < list.size(); i++) {
-            DomainInfoDO row = list.get(i);
-            vos.get(i).setProportion(calculateDailyProportion(row.getProportion(), row.getProportionDate(),
-                    today, totalCount));
+
+        // 分析接口按预算位 + 域名组汇总；这里也按域名组合并历史重复行，确保分子口径相同。
+        Map<String, DomainInfoDO> distinctRows = new LinkedHashMap<>();
+        Map<String, Long> groupCounts = new HashMap<>();
+        for (DomainInfoDO row : list) {
+            String key = row.getDomains();
+            distinctRows.putIfAbsent(key, row);
+        }
+        // 直接复用分析接口相同的全日分组统计结果；不能只累加当前详情页 limit 内的原始行。
+        for (DomainInfoProportionAnalysisRespVO dailyGroup : domainInfoMapper.selectDailyGroupCountByDspSlot(today)) {
+            if (Objects.equals(dspSlotId, dailyGroup.getDspSlotId())) {
+                groupCounts.put(dailyGroup.getDomains(), dailyGroup.getGroupCount() == null
+                        ? 0L : dailyGroup.getGroupCount());
+            }
+        }
+        // 详情占比以当前预算位当天所有域名组次数为分母，不使用全站总次数。
+        long dspSlotTotalCount = groupCounts.values().stream().mapToLong(Long::longValue).sum();
+
+        List<DomainInfoDO> groupedRows = new ArrayList<>(distinctRows.values());
+        groupedRows.sort((left, right) -> {
+            boolean leftToday = today.equals(left.getProportionDate());
+            boolean rightToday = today.equals(right.getProportionDate());
+            if (leftToday != rightToday) {
+                return leftToday ? -1 : 1;
+            }
+            int countOrder = Long.compare(
+                    groupCounts.getOrDefault(right.getDomains(), 0L),
+                    groupCounts.getOrDefault(left.getDomains(), 0L));
+            if (countOrder != 0) {
+                return countOrder;
+            }
+            return Long.compare(right.getId() == null ? 0L : right.getId(),
+                    left.getId() == null ? 0L : left.getId());
+        });
+
+        List<DomainInfoRespVO> vos = new ArrayList<>(groupedRows.size());
+        for (DomainInfoDO row : groupedRows) {
+            DomainInfoRespVO vo = BeanUtils.toBean(row, DomainInfoRespVO.class);
+            String key = row.getDomains();
+            vo.setProportion(calculateDailyProportion(groupCounts.getOrDefault(key, 0L),
+                    row.getProportionDate(), today, dspSlotTotalCount));
+            vos.add(vo);
         }
         return vos;
     }
 
-    private Long dailyCountTotal(Long dspSlotId, LocalDate statDate) {
-        return domainInfoMapper.selectDailyGroupCountTotal(dspSlotId, statDate);
+    @Override
+    public List<DomainInfoProportionAnalysisRespVO> getTodayProportionAnalysis() {
+        LocalDate today = LocalDate.now();
+        Long totalCount = dailyCountTotal(today);
+        List<DomainInfoProportionAnalysisRespVO> rows = domainInfoMapper.selectDailyGroupCountByDspSlot(today);
+        if (rows.isEmpty()) {
+            return rows;
+        }
+        Set<Long> dspSlotIds = new HashSet<>();
+        Map<Long, Long> budgetTotals = new HashMap<>();
+        for (DomainInfoProportionAnalysisRespVO row : rows) {
+            if (row.getDspSlotId() != null) {
+                dspSlotIds.add(row.getDspSlotId());
+                budgetTotals.merge(row.getDspSlotId(), row.getGroupCount() == null ? 0L : row.getGroupCount(), Long::sum);
+            }
+        }
+        Map<Long, DspSlotInfoDO> slotMap = new HashMap<>();
+        Map<Long, String> companyNameMap = new HashMap<>();
+        for (DspSlotInfoDO slot : dspSlotInfoMapper.selectByIds(dspSlotIds)) {
+            if (slot != null && slot.getId() != null) {
+                slotMap.put(slot.getId(), slot);
+            }
+        }
+        Set<Long> companyIds = new HashSet<>();
+        for (DspSlotInfoDO slot : slotMap.values()) {
+            if (slot.getCompanyId() != null) {
+                companyIds.add(slot.getCompanyId());
+            }
+        }
+        if (!companyIds.isEmpty()) {
+            for (CompanyDO company : dspCompanyMapper.selectByIds(companyIds)) {
+                if (company != null && company.getId() != null) {
+                    companyNameMap.put(company.getId(), company.getName());
+                }
+            }
+        }
+        long previousCount = Long.MIN_VALUE;
+        int currentRank = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            DomainInfoProportionAnalysisRespVO row = rows.get(i);
+            long groupCount = row.getGroupCount() == null ? 0L : row.getGroupCount();
+            row.setStatDate(today);
+            row.setTotalCount(totalCount == null ? 0L : totalCount);
+            row.setBudgetTotalCount(budgetTotals.getOrDefault(row.getDspSlotId(), 0L));
+            row.setProportion(calculateDailyProportion(groupCount, today, today, totalCount));
+            if (groupCount != previousCount) {
+                currentRank = i + 1;
+                previousCount = groupCount;
+            }
+            row.setProportionRank(currentRank);
+            row.setCountRank(currentRank);
+            DspSlotInfoDO slot = slotMap.get(row.getDspSlotId());
+            if (slot != null) {
+                row.setDspSlotName(slot.getName());
+                row.setDspCompanyName(companyNameMap.get(slot.getCompanyId()));
+            }
+        }
+        return rows;
+    }
+
+    private Long dailyCountTotal(LocalDate statDate) {
+        return domainInfoMapper.selectDailyGroupCountTotal(statDate);
     }
 
     /** API 仍用百万分比传百分比，前端除以 10,000 后显示百分数。 */

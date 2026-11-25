@@ -67,4 +67,7 @@ public interface DomainInfoService {
      */
     List<DomainInfoRespVO> getInfoListByDspSlotId(Long dspSlotId, Integer limit);
 
+    /** 查询当天全站域名组次数及各预算位占比，供占比核对页面使用。 */
+    List<DomainInfoProportionAnalysisRespVO> getTodayProportionAnalysis();
+
 }

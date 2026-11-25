@@ -96,6 +96,13 @@ public class DomainInfoController {
         return success(infoService.getInfoListByDspSlotId(dspSlotId, limit));
     }
 
+    @GetMapping("/proportion-analysis-today")
+    @Operation(summary = "查询当日全站域名组占比分析")
+    @PreAuthorize("@ss.hasPermission('domain:info:query')")
+    public CommonResult<List<DomainInfoProportionAnalysisRespVO>> getTodayProportionAnalysis() {
+        return success(infoService.getTodayProportionAnalysis());
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出DSP域名详情 Excel")
     @PreAuthorize("@ss.hasPermission('domain:info:export')")

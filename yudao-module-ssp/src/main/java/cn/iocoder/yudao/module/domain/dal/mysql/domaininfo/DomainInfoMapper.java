@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo.DomainInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Delete;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import cn.iocoder.yudao.module.domain.controller.admin.domaininfo.vo.*;
 
@@ -21,12 +22,24 @@ import cn.iocoder.yudao.module.domain.controller.admin.domaininfo.vo.*;
 @Mapper
 public interface DomainInfoMapper extends BaseMapperX<DomainInfoDO> {
 
-    /** 查询指定预算位、统计日下全部域名组次数总和（不受详情列表条数限制）。 */
+    /** 查询统计日下全部预算位、全部域名组次数总和（不受详情预算位和列表条数限制）。 */
     @Select("SELECT COALESCE(SUM(proportion), 0) AS totalCount " +
-            "FROM dsp_domain_info WHERE dsp_slot_id = #{dspSlotId} " +
-            "AND proportion_date = #{statDate} AND deleted = 0")
-    Long selectDailyGroupCountTotal(@Param("dspSlotId") Long dspSlotId,
-                                    @Param("statDate") java.time.LocalDate statDate);
+            "FROM dsp_domain_info WHERE proportion_date = #{statDate} AND deleted = 0")
+    @InterceptorIgnore(tenantLine = "true") // 日占比全局分母，不按预算位或租户过滤
+    Long selectDailyGroupCountTotal(@Param("statDate") java.time.LocalDate statDate);
+
+    /** 查询统计日每个去重域名组的次数，后台计算全站统一分母及排序名次。 */
+    @Select("SELECT dsp_slot_id AS dspSlotId, domains, COALESCE(SUM(proportion), 0) AS groupCount " +
+            "FROM dsp_domain_info WHERE proportion_date = #{statDate} AND deleted = 0 " +
+            "AND dsp_slot_id IS NOT NULL GROUP BY dsp_slot_id, domains ORDER BY groupCount DESC, dsp_slot_id ASC")
+    @InterceptorIgnore(tenantLine = "true")
+    List<DomainInfoProportionAnalysisRespVO> selectDailyGroupCountByDspSlot(
+            @Param("statDate") java.time.LocalDate statDate);
+
+    /** 物理删除统计日期早于保留日期的域名组记录。 */
+    @Delete("DELETE FROM dsp_domain_info WHERE proportion_date < #{cutoffDate}")
+    @InterceptorIgnore(tenantLine = "true")
+    int deleteDomainGroupsBeforeDate(@Param("cutoffDate") java.time.LocalDate cutoffDate);
 
     default PageResult<DomainInfoDO> selectPage(DomainInfoPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<DomainInfoDO>()
@@ -47,12 +60,22 @@ public interface DomainInfoMapper extends BaseMapperX<DomainInfoDO> {
     default List<DomainInfoDO> selectListByDspSlotId(Long dspSlotId, Integer limit) {
         int n = limit == null ? 100 : limit;
         n = Math.min(Math.max(n, 1), 500);
-        String today = LocalDate.now().toString();
-        return selectList(new LambdaQueryWrapperX<DomainInfoDO>()
-                .eq(DomainInfoDO::getDspSlotId, dspSlotId)
-                .last("ORDER BY CASE WHEN proportion_date = '" + today + "' THEN 0 ELSE 1 END ASC, " +
-                        "CASE WHEN proportion_date = '" + today + "' THEN proportion ELSE 0 END DESC, id DESC LIMIT " + n));
+        return selectGroupedListByDspSlotId(dspSlotId, LocalDate.now(), n);
     }
+
+    /** 先在数据库合并相同预算位、域名组和统计日的重复行，再排序和限制条数。 */
+    @Select("SELECT MAX(id) AS id, dsp_slot_id AS dspSlotId, MAX(ssp_slot_id) AS sspSlotId, " +
+            "domains, SUM(proportion) AS proportion, proportion_date AS proportionDate, " +
+            "MAX(create_time) AS createTime " +
+            "FROM dsp_domain_info WHERE dsp_slot_id = #{dspSlotId} AND deleted = 0 " +
+            "GROUP BY dsp_slot_id, domains, proportion_date " +
+            "ORDER BY CASE WHEN proportion_date = #{today} THEN 0 ELSE 1 END ASC, " +
+            "CASE WHEN proportion_date = #{today} THEN SUM(proportion) ELSE 0 END DESC, " +
+            "MAX(id) DESC LIMIT #{limit}")
+    @InterceptorIgnore(tenantLine = "true")
+    List<DomainInfoDO> selectGroupedListByDspSlotId(@Param("dspSlotId") Long dspSlotId,
+                                                    @Param("today") LocalDate today,
+                                                    @Param("limit") int limit);
 
     /**
      * 按 dsp_slot_id 分组统计组数（一个 dsp_slot_id 只算一条）
