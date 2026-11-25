@@ -53,12 +53,6 @@ public class SspSlotHourExportVO {
     @ExcelProperty("点击率")
     private String clickRateText;
 
-//    @ExcelProperty("折后点击")
-    private Long discountClickPv;
-
-//    @ExcelProperty("折后展示")
-    private Long discountShowPv;
-
 //    @ExcelProperty("调起成功")
     @ExcelIgnore
     private Long dplsuccPv;

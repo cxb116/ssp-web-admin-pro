@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
@@ -39,6 +40,12 @@ public class DomainInfoDO extends BaseDO {
      * 域名集
      */
     private String domains;
+
+    /** 当日域名组上报次数，原始计数，不是百分比 */
+    private Long proportion;
+
+    /** proportion 对应的统计日期 */
+    private LocalDate proportionDate;
 
 
 }

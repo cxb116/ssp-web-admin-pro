@@ -216,8 +216,26 @@ public class DomainInfoServiceImpl implements DomainInfoService {
 
     @Override
     public List<DomainInfoRespVO> getInfoListByDspSlotId(Long dspSlotId, Integer limit) {
-        List<DomainInfoDO> list = domainInfoMapper.selectListByDspSlotId(dspSlotId, limit);
-        return BeanUtils.toBean(list, DomainInfoRespVO.class);
+        LocalDate statDate = LocalDate.now();
+        List<DomainInfoDO> list = domainInfoMapper.selectListByDspSlotId(dspSlotId, limit, statDate);
+        // 分母按当前租户当天全部预算位的域名组次数统计，不能只汇总当前详情预算位。
+        Long total = domainInfoMapper.selectDailyProportionTotal(statDate);
+        long denominator = total == null ? 0L : total;
+        List<DomainInfoRespVO> result = BeanUtils.toBean(list, DomainInfoRespVO.class);
+        for (int i = 0; i < list.size(); i++) {
+            DomainInfoDO row = list.get(i);
+            DomainInfoRespVO vo = result.get(i);
+            if (statDate.equals(row.getProportionDate()) && denominator > 0 && row.getProportion() != null) {
+                vo.setProportion(java.math.BigDecimal.valueOf(row.getProportion())
+                        .multiply(java.math.BigDecimal.valueOf(100))
+                        .divide(java.math.BigDecimal.valueOf(denominator), 4, java.math.RoundingMode.HALF_UP));
+                vo.setProportionDate(statDate);
+            } else {
+                vo.setProportion(null);
+                vo.setProportionDate(null);
+            }
+        }
+        return result;
     }
 
     /**

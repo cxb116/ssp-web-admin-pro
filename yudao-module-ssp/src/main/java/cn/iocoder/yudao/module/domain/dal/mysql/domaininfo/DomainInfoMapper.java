@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo.DomainInfoDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import cn.iocoder.yudao.module.domain.controller.admin.domaininfo.vo.*;
 
@@ -29,26 +30,30 @@ public interface DomainInfoMapper extends BaseMapperX<DomainInfoDO> {
     }
 
     /**
-     * 查询指定预算位的全部原始记录（不分组合并、不按日期过滤，按 id 倒序）
+     * 查询指定预算位的原始域名组，按当日上报次数降序并限制返回数量；无当日统计排在后面
      *
      * @param dspSlotId 预算位 ID
      * @return 原始记录列表
      */
     /**
-     * 查询指定预算位的最近记录（按 id 倒序取前 limit 条）。
+     * 查询指定预算位当日占比最高的记录（先按全部域名组排序，再取前 limit 条）。
      * 【性能】永久留底后活跃预算位累计几千条，无 limit 全量返回曾把详情页拖死。
      *
      * @param dspSlotId 预算位 ID
      * @param limit     返回条数上限，null 用默认 100；clamp 到 [1,500] 后拼接（数字白名单，无注入风险）
      */
-    default List<DomainInfoDO> selectListByDspSlotId(Long dspSlotId, Integer limit) {
+    default List<DomainInfoDO> selectListByDspSlotId(Long dspSlotId, Integer limit, LocalDate statDate) {
         int n = limit == null ? 100 : limit;
         n = Math.min(Math.max(n, 1), 500);
-        return selectList(new LambdaQueryWrapperX<DomainInfoDO>()
-                .eq(DomainInfoDO::getDspSlotId, dspSlotId)
-                .orderByDesc(DomainInfoDO::getId)
-                .last("LIMIT " + n));
+        return selectDomainGroupsByDailyProportion(dspSlotId, statDate, n);
     }
+
+    List<DomainInfoDO> selectDomainGroupsByDailyProportion(@Param("dspSlotId") Long dspSlotId,
+                                                            @Param("statDate") LocalDate statDate,
+                                                            @Param("limit") int limit);
+
+    @InterceptorIgnore(tenantLine = "true") // 当天全局分母，不按租户过滤
+    Long selectDailyProportionTotal(@Param("statDate") LocalDate statDate);
 
     /**
      * 按 dsp_slot_id 分组统计组数（一个 dsp_slot_id 只算一条）

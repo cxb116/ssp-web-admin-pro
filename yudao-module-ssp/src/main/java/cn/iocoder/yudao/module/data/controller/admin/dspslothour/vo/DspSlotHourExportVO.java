@@ -48,12 +48,6 @@ public class DspSlotHourExportVO {
     @ExcelProperty("点击率")
     private String clickRate;
 
-    @ExcelProperty("折后点击")
-    private Long discountClickPv;
-
-    @ExcelProperty("折后展示")
-    private Long discountShowPv;
-
     @ExcelProperty("媒体ecpm")
     private BigDecimal mediaEcpm;
 

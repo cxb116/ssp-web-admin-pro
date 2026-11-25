@@ -5,6 +5,8 @@ import lombok.*;
 import java.util.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 import cn.idev.excel.annotation.*;
 
 @Schema(description = "管理后台 - DSP域名详情 Response VO")
@@ -35,6 +37,12 @@ public class DomainInfoRespVO {
     @Schema(description = "域名集", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("域名集")
     private String domains;
+
+    @Schema(description = "该域名组占预算位当日全部域名组上报次数的百分比", example = "25.0000")
+    private BigDecimal proportion;
+
+    @Schema(description = "域名占比对应的统计日期", example = "2026-11-24")
+    private LocalDate proportionDate;
 
     @Schema(description = "该 dsp_slot_id 下各条记录中，单条 domains 域名数量最多的数量", example = "9")
     @ExcelProperty("最大域名数量")

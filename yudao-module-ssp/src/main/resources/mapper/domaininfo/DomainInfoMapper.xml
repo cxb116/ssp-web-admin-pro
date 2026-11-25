@@ -36,6 +36,27 @@
         </if>
     </sql>
 
+    <!-- 先对该预算位的完整域名组集合按当日原始次数排序，再应用详情上限。 -->
+    <select id="selectDomainGroupsByDailyProportion" resultType="cn.iocoder.yudao.module.domain.dal.dataobject.domaininfo.DomainInfoDO">
+        SELECT id, dsp_slot_id, ssp_slot_id, domains, proportion, proportion_date, create_time
+        FROM dsp_domain_info
+        WHERE deleted = 0
+          AND dsp_slot_id = #{dspSlotId}
+        ORDER BY
+          CASE WHEN proportion_date = #{statDate} THEN 0 ELSE 1 END ASC,
+          CASE WHEN proportion_date = #{statDate} THEN IFNULL(proportion, 0) ELSE 0 END DESC,
+          id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 分母统计当天全表所有预算位的域名组，不按租户、详情预算位或 limit 过滤。 -->
+    <select id="selectDailyProportionTotal" resultType="java.lang.Long">
+        SELECT IFNULL(SUM(proportion), 0)
+        FROM dsp_domain_info
+        WHERE deleted = 0
+          AND proportion_date = #{statDate}
+    </select>
+
     <select id="selectDspSlotGroupCount" resultType="java.lang.Long">
         SELECT COUNT(DISTINCT dsp_slot_id)
         FROM dsp_domain_info
